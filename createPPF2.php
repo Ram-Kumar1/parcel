@@ -64,13 +64,27 @@ if (isset($_GET['lr_Id'])) {
     $invoiceResult = mysqli_query($conn, $invoiceDetails);
     while ($row = mysqli_fetch_array($invoiceResult)) {
 
-        $fromPlace = $row['FROM_NAME'];
+        $fromBranchPlace = $row['FROM_BRANCH_ID'];
+        $getfromBranchPlace = "SELECT ROUTE_NAME FROM branches WHERE BRANCH_ID = ?";
+        $stmt = $conn->prepare($getfromBranchPlace);
+        $stmt->bind_param("s", $fromBranchPlace);
+        $stmt->execute();
+        $result = $stmt->get_result();
+    
+        while ($rows = $result->fetch_assoc()) {
+            $fromPlaceName = $rows['ROUTE_NAME'];
+        }
+
+        $toPlace = $row['TO_BRANCH_ID'];
+
+         $fromPlace = $row['FROM_NAME'];
         $fromMobile = $row['FROM_MOBILE'];
         $toPlace = $row['TO_NAME'];
         $toMobile = $row['TO_MOBILE'];
         $bookingDate = $row['BOOKING_DATETIME'];
         $paymentType = $row['PAYMENT_TYPE'];
         $transportationCost = $row['TOTAL_AMOUNT'];
+        $deliveryType = $row['TRANSPORT_TYPE'];
         $quantityDetails = $row['ITEMS'];
         $TplaceId = '';
         $FplaceId = '';
@@ -247,7 +261,7 @@ if (isset($_GET['lr_Id'])) {
                                         <div class="form-w3layouts">
                                             <div class="row">
                                                 <div class="col-lg-12">
-                                                    <button type="button" class="btn btn-success pull-left m-2" onclick="CreatePDFfromHTML('<?php echo $fromPlace; ?>')">
+                                                    <button type="button" class="btn btn-success pull-left m-2" onclick="CreatePDFfromHTML('<?php echo $fromPlaceName; ?>')">
                                                         <i class="fa fa-file-pdf-o" aria-hidden="true"></i>
                                                         Export PDF
                                                     </button>
@@ -289,7 +303,7 @@ if (isset($_GET['lr_Id'])) {
                                                                             <td style="text-align: center;">
                                                                                 <h3>
                                                                                     <b contenteditable="true" id="fromBranchPlace">
-                                                                                        <?php echo $fromBranchPlace ?? 'null' . " / " . $fromPlace ?? 'null' ?>
+                                                                                        <?php echo $fromPlaceName ?? 'null' . " / " . $fromPlace ?? 'null' ?>
                                                                                     </b>
                                                                                 </h3>
                                                                             </td>
@@ -396,7 +410,7 @@ if (isset($_GET['lr_Id'])) {
                                                                                 <br>
                                                                                 <span class="text-center">
                                                                                     <span>Delivery Type: </span><br>
-                                                                                    <b contenteditable="true" id="deliveryType"><?php echo "deliveryType"; ?></b>
+                                                                                    <b contenteditable="true" id="deliveryType"><?php echo $deliveryType; ?></b>
                                                                                 </span>
                                                                             </td>
                                                                         </tr>
