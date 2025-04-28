@@ -43,8 +43,7 @@
         $branchName = $_SESSION['admin'] ?? 'GUEST';
 
         // Start base SQL query
-        $sql = "SELECT BD.BOOKING_ID, BD.BOOKING_DATETIME, BD.FROM_NAME, BD.LR_NUMBER, BD.FROM_BRANCH_ID, BD.TO_BRANCH_ID,
-            BD.PAYMENT_TYPE, BD.ITEMS, BD.TOTAL_AMOUNT FROM booking BD  WHERE IS_DELETE = 0";
+        $sql = "SELECT * FROM booking BD  WHERE IS_DELETE = 0";
 
 
 
@@ -89,6 +88,8 @@
                                     <?php
                                     if (isset($conn) && $result = mysqli_query($conn, $sql)) {
                                         if (mysqli_num_rows($result) > 0) {
+
+
                                     ?>
                                             <div class="panel-body">
                                                 <div class="">
@@ -98,12 +99,20 @@
                                                                 <tr class="filters" style="color:#0c1211;">
                                                                     <th style="color:#0c1211">S. NO</th>
                                                                     <th style="color:#0c1211; text-align: center;">LR&nbsp;No</th>
-                                                                    <th style="color:#0c1211">Customer</th>
-                                                                    <th style="color:#0c1211">From</th>
-                                                                    <th style="color:#0c1211">To</th>
                                                                     <th class="max-30" style="color:#0c1211">Booking&nbsp;Date</th>
+                                                                    <th style="color:#0c1211">From Branch</th>
+                                                                    <th style="color:#0c1211">To Branch</th>
+                                                                    <th style="color:#0c1211">Customer</th>
+                                                                    <th style="color:#0c1211">Mobile</th>
+                                                                    <th style="color:#0c1211">To Name</th>
+                                                                    <th style="color:#0c1211">To Mobile</th>
                                                                     <th style="color:#0c1211">Payment&nbsp;Type</th>
+                                                                    <th style="color:#0c1211">Payment&nbsp;Method</th>
+                                                                    <th style="color:#0c1211">Loading</th>
+                                                                    <th style="color:#0c1211">Unloading</th>
                                                                     <th style="color:#0c1211; text-align: center;">Items</th>
+                                                                    <th style="color:#0c1211; text-align: center;">Fright</th>
+                                                                    <th style="color:#0c1211; text-align: center;">LR Amount</th>
                                                                     <th style="color:#0c1211; text-align: center;">Total&nbsp;Amount</th>
                                                                     <th style="color:#0c1211; text-align: center;">View&nbsp;PDF</th>
                                                                     <th style="color:#0c1211; text-align: center;">Edit</th>
@@ -114,10 +123,36 @@
                                                                 <?php
                                                                 $i = 1;
                                                                 while ($row = mysqli_fetch_array($result)) {
+                                                                    $BranchId = $row['FROM_BRANCH_ID'];
+                                                                    $toBranchId = $row['TO_BRANCH_ID'];
 
+                                                                    $sql = "SELECT ROUTE_NAME FROM branches WHERE BRANCH_ID = ?";
+                                                                    $stmt = $conn->prepare($sql);
+
+                                                                    if ($stmt) {
+                                                                        $stmt->bind_param("i", $BranchId);
+                                                                        $stmt->execute();
+                                                                        $resultRoute = $stmt->get_result();
+                                                                        $routeName = '';
+                                                                        if ($rows = $resultRoute->fetch_assoc()) {
+                                                                            $routeName = $rows['ROUTE_NAME'];
+                                                                        }
+                                                                    }
+                                                                    $sql = "SELECT ROUTE_NAME FROM branches WHERE BRANCH_ID = ?";
+                                                                    $stmt = $conn->prepare($sql);
+
+                                                                    if ($stmt) {
+                                                                        $stmt->bind_param("i", $toBranchId);
+                                                                        $stmt->execute();
+                                                                        $resultRoute = $stmt->get_result();
+                                                                        $torouteName = '';
+                                                                        if ($rows = $resultRoute->fetch_assoc()) {
+                                                                            $torouteName = $rows['ROUTE_NAME'];
+                                                                        }
+                                                                    }
                                                                 ?>
 
-                                                                    <tr class="invoice-id- <?php echo $row['BOOKING_ID']; ?>">
+                                                                    <tr class="invoice-id-<?php echo $row['BOOKING_ID']; ?>">
                                                                         <td style="color:#0c1211;">
                                                                             <?php echo $i; ?>
                                                                         </td>
@@ -127,14 +162,20 @@
                                                                                 <?php echo $row['LR_NUMBER'] ?? 'NO LR NUMBER'; ?>
                                                                             </a>
                                                                         </td>
-                                                                        <td style="color:#0c1211"><?php echo $row['FROM_NAME']; ?></td>
-                                                                        <td style="color:#0c1211"><?php echo $row['FROM_BRANCH_ID']; ?></td>
-                                                                        <td style="color:#0c1211"><?php echo $row['TO_BRANCH_ID']; ?></td>
                                                                         <td style="color:#0c1211"><?php echo $row['BOOKING_DATETIME']; ?></td>
+                                                                        <td style="color:#0c1211"><?php echo $routeName; ?></td>
+                                                                        <td style="color:#0c1211"><?php echo $torouteName; ?></td>
+                                                                        <td style="color:#0c1211"><?php echo $row['FROM_NAME']; ?></td>
+                                                                        <td style="color:#0c1211"><?php echo $row['FROM_MOBILE']; ?></td>
+                                                                        <td style="color:#0c1211"><?php echo $row['TO_NAME']; ?></td>
+                                                                        <td style="color:#0c1211"><?php echo $row['TO_MOBILE']; ?></td>
                                                                         <td style="color:#0c1211"><?php echo $row['PAYMENT_TYPE']; ?></td>
+                                                                        <td style="color:#0c1211"><?php echo $row['PAYMENT_METHOD']; ?></td>
+                                                                        <td style="color:#0c1211"><?php echo $row['LOADING']; ?></td>
+                                                                        <td style="color:#0c1211"><?php echo $row['UNLOADING']; ?></td>
                                                                         <td style="color:#0c1211">
                                                                             <?php
-                                                                            $items = json_decode($row['ITEMS'], true); // decode JSON
+                                                                            $items = json_decode($row['ITEMS'], true);
                                                                             if (!empty($items)) {
                                                                                 foreach ($items as $item) {
                                                                                     echo "Particular: " . htmlspecialchars($item['particular']) . ", ";
@@ -148,7 +189,8 @@
                                                                             }
                                                                             ?>
                                                                         </td>
-
+                                                                        <td style="color:#0c1211"><?php echo $row['FRIGHT']; ?></td>
+                                                                        <td style="color:#0c1211"><?php echo $row['LR_AMOUNT']; ?></td>
                                                                         <td style="color:#0c1211"><?php echo $row['TOTAL_AMOUNT']; ?></td>
 
                                                                         <td style="color:#0c1211; text-align: center;">
@@ -156,13 +198,12 @@
                                                                                 <i class="material-icons" style="cursor:pointer;">remove_red_eye</i>
                                                                             </a>
                                                                         </td>
-                                                                        <td style="color:#0c1211; text-align: center; ">
+                                                                        <td style="color:#0c1211; text-align: center;">
                                                                             <a class="a-edit-icon" style="cursor:pointer;"
                                                                                 data-id="<?php echo $row['BOOKING_ID']; ?>"
                                                                                 onclick="editBooking(<?php echo $row['BOOKING_ID']; ?>)">
                                                                                 <i class="fa fa-pencil font-x-large" aria-hidden="true"></i>
                                                                             </a>
-
                                                                         </td>
                                                                         <td>
                                                                             <a class="a-delete-icon" style="cursor:pointer;"
@@ -172,11 +213,13 @@
                                                                             </a>
                                                                         </td>
                                                                     </tr>
+
                                                                 <?php
                                                                     ++$i;
                                                                 }
                                                                 ?>
                                                             </tbody>
+
                                                         </table>
                                                 <?php
                                                 mysqli_free_result($result);
@@ -192,39 +235,7 @@
                                                 </div>
                                             </div>
 
-                                            <!-- Modal -->
-                                            <!-- <div class="modal fade" id="cancelReasonModal" tabindex="-1" role="dialog" aria-labelledby="cancelReasonModalLabel" aria-hidden="true">
-                                                <div class="modal-dialog" role="document">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title">Cancel Booking</h5>
-                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                                <span aria-hidden="true">&times;</span>
-                                                            </button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <label for="cancel-reason">Reason for Cancel:</label>
-                                                            <select id="cancel-reason" class="form-control" onchange="handleReasonChange(this)">
-                                                                <option value="">-- Select Reason --</option>
-                                                                <option value="Customer Cancelled">Customer Cancelled</option>
-                                                                <option value="Booking Mistake">Booking Mistake</option>
-                                                                <option value="Payment Issue">Payment Issue</option>
-                                                                <option value="Other">Other</option>
-                                                            </select>
-                                                            <div id="other-reason-box" class="mt-2" style="display:none;">
-                                                                <input type="text" id="other-reason" class="form-control" placeholder="Enter other reason">
-                                                            </div>
-                                                            <div id="" class="mt-2">
-                                                                <input type="text" id="remark" class="form-control" placeholder="Enter Remark">
-                                                            </div>
-                                                            <input type="hidden" id="cancel-booking-id" value="<?php echo $row['BOOKING_ID']; ?>">
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-danger" onclick="deleteBooking()">Submit</button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div> -->
+                                           
                                 </div>
                             </div>
                         </div>
@@ -256,128 +267,128 @@
                         <div class="col-sm-6">
                             <div class="form-group">
                                 <label for="invoice-no">LR Number</label>
-                                <input type="text" class="form-control" id="lr-number" name="lr-number" readonly />
+                                <input type="text" class="form-control" id="lrNumber" name="lrNumber" readonly />
                             </div>
                         </div>
                         <div class="col-sm-6">
                             <div class="form-group">
-                                <label for="invoice-no">Status </label>
-                                <input type="text" class="form-control" id="invoice-status" name="invoice-status"
-                                    readonly />
+                                <label for="invoice-no">Booking Date</label>
+                                <input type="text" class="form-control" id="bookingDate" name="bookingDate" readonly />
                             </div>
                         </div>
+                       
                         <div class="col-sm-6">
                             <div class="form-group">
-                                <label for="customer">Customer</label>
-                                <input type="text" class="form-control" id="customer" name="customer" readonly />
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label for="customer">Mobile</label>
-                                <input type="text" class="form-control" id="mobile" name="mobile" readonly />
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label for="customer">Delivery To</label>
-                                <input type="text" class="form-control" id="delivery-to" name="delivery-to"
-                                    readonly />
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label for="customer">Delivery Mobile</label>
-                                <input type="text" class="form-control" id="delivery-mobile" name="delivery-mobile"
-                                    readonly />
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label for="customer">From</label>
-                                <input type="text" class="form-control" id="from" name="from" readonly />
+                                <label for="customer">From Name</label>
+                                <input type="text" class="form-control" id="fromName" name="fromName" readonly />
                             </div>
                         </div>
                         <div class="col-sm-6">
                             <div class="form-group">
                                 <label for="customer">From Mobile</label>
-                                <input type="text" class="form-control" id="from-address" name="from-address"
-                                    readonly />
+                                <input type="text" class="form-control" id="fromMobile" name="fromMobile" readonly />
                             </div>
                         </div>
                         <div class="col-sm-6">
                             <div class="form-group">
-                                <label for="customer">To</label>
-                                <input type="text" class="form-control" id="to" name="to" readonly />
+                                <label for="customer">To Name</label>
+                                <input type="text" class="form-control" id="toName" name="toName"
+                                    readonly />
                             </div>
                         </div>
                         <div class="col-sm-6">
                             <div class="form-group">
                                 <label for="customer">To Mobile</label>
-                                <input type="text" class="form-control" id="to-address" name="to-address" readonly />
-                            </div>
-                        </div>
-                        <div class="col-sm-12">
-                            <div class="form-group">
-                                <label for="quantity-details">Quantity Details</label>
-                                <textarea class="form-control" id="quantity-details" rows="3" readonly></textarea>
+                                <input type="text" class="form-control" id="toMobile" name="toMobile" readonly />
                             </div>
                         </div>
                         <div class="col-sm-6">
                             <div class="form-group">
-                                <label for="customer">Quantity</label>
-                                <input type="text" class="form-control" id="quantity" name="quantity" readonly />
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label for="customer">Quantity Description</label>
-                                <input type="text" class="form-control" id="quantity-desc" name="quantity-desc"
+                                <label for="customer">Payment Type</label>
+                                <input type="text" class="form-control" id="paymentType" name="paymentType"
                                     readonly />
                             </div>
                         </div>
                         <div class="col-sm-6">
                             <div class="form-group">
-                                <label for="total-amount">Transportation Amount</label>
-                                <input type="number" class="form-control" id="transportation-amount"
-                                    name="transportation-amount" readonly />
+                                <label for="customer">Payment Method</label>
+                                <input type="text" class="form-control" id="paymentMethod" name="paymentMethod" readonly />
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="customer">Transport Type</label>
+                                <input type="text" class="form-control" id="TransportType" name="TransportType"
+                                    readonly />
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="customer">DCC</label>
+                                <input type="text" class="form-control" id="dcc" name="dcc" readonly />
+                            </div>
+                        </div>
+                      
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="total-amount">Customer Invoice Number</label>
+                                <input type="text" class="form-control" id="customerInvoiceNumber"
+                                    name="customerInvoiceNumber" readonly />
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="total-amount">Customer Invoice Value</label>
+                                <input type="text" class="form-control" id="customerInvoiceValue"
+                                    name="customerInvoiceValue" readonly />
+                            </div>
+                        </div>
+                       
+                        
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label for="quantity-details">Items</label>
+                                <textarea class="form-control" id="items" name="items" rows="3" readonly></textarea>
+                            </div>
+                        </div>
+                       
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="total-amount">Unloading Amount</label>
+                                <input type="number" class="form-control" id="unloading"
+                                    name="unloading" readonly />
                             </div>
                         </div>
                         <div class="col-sm-6">
                             <div class="form-group">
                                 <label for="total-amount">Loading Amount</label>
-                                <input type="number" class="form-control" id="loading-amount"
-                                    name="loading-amount" readonly />
+                                <input type="number" class="form-control" id="loading"
+                                    name="loading" readonly />
                             </div>
                         </div>
                         <div class="col-sm-6">
                             <div class="form-group">
-                                <label for="total-amount">Additional Amount</label>
-                                <input type="number" class="form-control" id="additional-amount"
-                                    name="additional-amount" readonly />
+                                <label for="total-amount">LR Amount</label>
+                                <input type="number" class="form-control" id="lrAmount"
+                                    name="lrAmount" readonly />
                             </div>
                         </div>
                         <div class="col-sm-6">
                             <div class="form-group">
                                 <label for="total-amount">Total Amount</label>
-                                <input type="number" class="form-control" id="total-amount"
-                                    name="total-amount" readonly />
+                                <input type="number" class="form-control" id="totalAmount"
+                                    name="totalAmount" readonly />
                             </div>
                         </div>
                         <div class="col-sm-6">
                             <div class="form-group">
-                                <label for="total-amount">Goods Value</label>
-                                <input type="text" class="form-control" id="goods-value"
-                                    name="goods-value" readonly />
+                                <label for="total-amount">Frights</label>
+                                <input type="text" class="form-control" id="fright"
+                                    name="fright" readonly />
                             </div>
                         </div>
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label for="total-amount">Delivery Type</label>
-                                <input type="text" class="form-control" id="notes"
-                                    name="notes" readonly />
-                            </div>
-                        </div>
+                      
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -386,168 +397,10 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div>  
     </div>
     </section>
-    <!-- Trigger the modal with a button -->
-    <div style="display: none;">
-        <button type="button" class="btn btn-info btn-lg" id="hsn-btn" data-toggle="modal"
-            data-target="#hsn-model">Open Modal
-        </button>
-        <input type="text" id="invoiceIdToCreate" />
-    </div>
-    <!-- Modal -->
-    <div id="details-model" class="modal fade" role="dialog">
-        <div class="modal-dialog modal-lg">
-            <!-- Modal content-->
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title">Booking Details</h4>
-
-                    <button type="button" class="close text-danger" data-dismiss="modal">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label for="invoice-no">Invoice No</label>
-                                <input type="text" class="form-control" id="invoice-no" name="invoice-no" readonly />
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label for="invoice-no">LR Number</label>
-                                <input type="text" class="form-control" id="lr-number" name="lr-number" readonly />
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label for="invoice-no">Status </label>
-                                <input type="text" class="form-control" id="invoice-status" name="invoice-status"
-                                    readonly />
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label for="customer">Customer</label>
-                                <input type="text" class="form-control" id="customer" name="customer" readonly />
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label for="customer">Mobile</label>
-                                <input type="text" class="form-control" id="mobile" name="mobile" readonly />
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label for="customer">Delivery To</label>
-                                <input type="text" class="form-control" id="delivery-to" name="delivery-to"
-                                    readonly />
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label for="customer">Delivery Mobile</label>
-                                <input type="text" class="form-control" id="delivery-mobile" name="delivery-mobile"
-                                    readonly />
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label for="customer">From</label>
-                                <input type="text" class="form-control" id="from" name="from" readonly />
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label for="customer">From Mobile</label>
-                                <input type="text" class="form-control" id="from-address" name="from-address"
-                                    readonly />
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label for="customer">To</label>
-                                <input type="text" class="form-control" id="to" name="to" readonly />
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label for="customer">To Mobile</label>
-                                <input type="text" class="form-control" id="to-address" name="to-address" readonly />
-                            </div>
-                        </div>
-                        <div class="col-sm-12">
-                            <div class="form-group">
-                                <label for="quantity-details">Quantity Details</label>
-                                <textarea class="form-control" id="quantity-details" rows="3" readonly></textarea>
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label for="customer">Quantity</label>
-                                <input type="text" class="form-control" id="quantity" name="quantity" readonly />
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label for="customer">Quantity Description</label>
-                                <input type="text" class="form-control" id="quantity-desc" name="quantity-desc"
-                                    readonly />
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label for="total-amount">Transportation Amount</label>
-                                <input type="number" class="form-control" id="transportation-amount"
-                                    name="transportation-amount" readonly />
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label for="total-amount">Loading Amount</label>
-                                <input type="number" class="form-control" id="loading-amount"
-                                    name="loading-amount" readonly />
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label for="total-amount">Additional Amount</label>
-                                <input type="number" class="form-control" id="additional-amount"
-                                    name="additional-amount" readonly />
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label for="total-amount">Total Amount</label>
-                                <input type="number" class="form-control" id="total-amount"
-                                    name="total-amount" readonly />
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label for="total-amount">Goods Value</label>
-                                <input type="text" class="form-control" id="goods-value"
-                                    name="goods-value" readonly />
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <label for="total-amount">Delivery Type</label>
-                                <input type="text" class="form-control" id="notes"
-                                    name="notes" readonly />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <!--                            <button type="button" class="btn btn-success" onclick="createPdf()">Create PDF</button>-->
-                    <button type="button" class="btn btn-primary" data-dismiss="modal">&times; Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
+ 
     </div>
     </section>
     </div>
@@ -599,52 +452,53 @@
         }
     };
 
-   
+
 
     $('.booking-id').click(function() {
-    var id = this.id;
-    var splitid = id.split('-');
-    var bookingId = splitid[2];
+        var id = this.id;
+        var splitid = id.split('-');
+        var bookingId = splitid[2];
 
-    // AJAX request
-    $.ajax({
-        url: 'bookingDataOperations.php',
-        type: 'post',
-        data: {
-            forBookingList: 1,
-            bookingId: bookingId
-        },
-        success: function(response) {
-            console.log(response);
-            let res = JSON.parse(response);
+        // AJAX request
+        $.ajax({
+            url: 'bookingDataOperations.php',
+            type: 'post',
+            data: {
+                forBookingList: 1,
+                bookingId: bookingId
+            },
+            success: function(response) {
+                console.log(response);
+                let res = JSON.parse(response);
 
-            // Now fill the modal fields
-            $('#lr-number').val(res['LR_NUMBER']);
-            // $('#invoice-no').val(res['INVOICE_NUMBER']);
-            $('#invoice-status').val(getBookingStatus(res['BOOKING_STATUS']));
-            $('#customer').val(res['BOOKING_DATETIME']);
-            $('#mobile').val(res['MANUAL_LR_NUMBER']);
-            $('#delivery-to').val(res['CUSTOMER_INVOICE_NUMBER']);
-            $('#delivery-mobile').val(res['CUSTOMER_INVOICE_VALUE']);
-            $('#from').val(res['FROM_NAME']);
-            $('#from-address').val(res['FROM_MOBILE']);
-            $('#to').val(res['TO_NAME']);
-            $('#to-address').val(res['TO_MOBILE']);
-            $("#quantity-details").val(getQuantityDetails(res['ITEMS']));
-            $('#quantity').val(res['TRANSPORT_TYPE']);
-            $('#quantity-desc').val(res['FRIGHT']);
-            $('#transportation-amount').val(res['PAYMENT_TYPE']);
-            $('#loading-amount').val(res['PAYMENT_METHOD']);
-            $('#additional-amount').val(res['LR_AMOUNT']);
-            $('#total-amount').val(res['TOTAL_AMOUNT']);
-            $('#goods-value').val(res['LOADING']);
-            $('#notes').val(res['UNLOADING']);
+                // Now fill the modal fields
+                $('#lrNumber').val(res['LR_NUMBER']);
+                $('#bookingDate').val(res['BOOKING_DATETIME']);
+                $('#mobile').val(res['MANUAL_LR_NUMBER']);
+                $('#delivery-to').val(res['CUSTOMER_INVOICE_NUMBER']);
+                $('#delivery-mobile').val(res['CUSTOMER_INVOICE_VALUE']);
+                $('#fromName').val(res['FROM_NAME']);
+                $('#fromMobile').val(res['FROM_MOBILE']);
+                $('#toName').val(res['TO_NAME']);
+                $('#toMobile').val(res['TO_MOBILE']);
+                $("#items").val(res['ITEMS']);
+                $('#transportType').val(res['TRANSPORT_TYPE']);
+                $('#fright').val(res['FRIGHT']);
+                $('#paymentType').val(res['PAYMENT_TYPE']);
+                $('#paymentMethod').val(res['PAYMENT_METHOD']);
+                $('#lrAmount').val(res['LR_AMOUNT']);
+                $('#totalAmount').val(res['TOTAL_AMOUNT']);
+                $('#loading').val(res['LOADING']);
+                $('#unloading').val(res['UNLOADING']);
+                $('#dcc').val(res['DCC']);
+                $('#customerInvoiceValue').val(res['CUSTOMER_INVOICE_NUMBER']);
+                $('#customerInvoiceNumber').val(res['CUSTOMER_INVOICE_VALUE']);
 
-            // Display Modal
-            $('#details-model').modal('show');
-        }
+                // Display Modal
+                $('#details-model').modal('show');
+            }
+        });
     });
-});
 
 
     function getQuantityDetails(itemsJson) {

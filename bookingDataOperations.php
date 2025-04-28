@@ -16,44 +16,76 @@ $dateTime = date('Y-m-d H:i', strtotime($date_1));
 
 
 // Get Lr Number
+// function getLrNumber($conn)
+// {
+//     $cdate = date('Y-m-d');
+//     $datePart = date('Ymd');
+
+//     // Check if LR number for today exists
+//     $checkDateQry = "SELECT LR_NUMBER FROM lr_number WHERE DATE = '$cdate' LIMIT 1";
+//     $checkResult = mysqli_query($conn, $checkDateQry);
+
+//     if (!$checkResult) {
+//         throw new Exception("Failed to check LR number: " . mysqli_error($conn));
+//     }
+
+//     if (mysqli_num_rows($checkResult) > 0) {
+//         // Fetch current LR and update it
+//         $row = mysqli_fetch_assoc($checkResult);
+//         $currentLR = (int)$row['LR_NUMBER'];
+//         $newLR = str_pad($currentLR + 1, 3, '0', STR_PAD_LEFT);
+
+//         $updateLRNumberQry = "UPDATE lr_number SET LR_NUMBER = '$newLR' WHERE DATE = '$cdate'";
+//         if (!mysqli_query($conn, $updateLRNumberQry)) {
+//             throw new Exception("Failed to update LR number: " . mysqli_error($conn));
+//         }
+
+//         $lrSerial = $newLR;
+//     } else {
+//         // Insert initial LR number for the day
+//         $lrSerial = '001';
+//         $insertLRQry = "INSERT INTO lr_number (DATE, LR_NUMBER, STATUS) VALUES ('$cdate', '$lrSerial', 0)";
+//         if (!mysqli_query($conn, $insertLRQry)) {
+//             throw new Exception("Failed to insert LR number: " . mysqli_error($conn));
+//         }
+//     }
+
+//     // Construct final LR number format
+//     $finalLRNumber = 'ZH-' . $datePart . '-' . $lrSerial;
+//     return $finalLRNumber;
+// }
+
 function getLrNumber($conn)
 {
-    $cdate = date('Y-m-d');
-    $datePart = date('Ymd');
-
-    // Check if LR number for today exists
-    $checkDateQry = "SELECT LR_NUMBER FROM lr_number WHERE DATE = '$cdate' LIMIT 1";
-    $checkResult = mysqli_query($conn, $checkDateQry);
+    // Get the latest LR number
+    $checkQry = "SELECT LR_NUMBER FROM lr_number ORDER BY id DESC LIMIT 1";
+    $checkResult = mysqli_query($conn, $checkQry);
 
     if (!$checkResult) {
         throw new Exception("Failed to check LR number: " . mysqli_error($conn));
     }
 
     if (mysqli_num_rows($checkResult) > 0) {
-        // Fetch current LR and update it
+        // Fetch current LR number and increment
         $row = mysqli_fetch_assoc($checkResult);
         $currentLR = (int)$row['LR_NUMBER'];
         $newLR = str_pad($currentLR + 1, 3, '0', STR_PAD_LEFT);
-
-        $updateLRNumberQry = "UPDATE lr_number SET LR_NUMBER = '$newLR' WHERE DATE = '$cdate'";
-        if (!mysqli_query($conn, $updateLRNumberQry)) {
-            throw new Exception("Failed to update LR number: " . mysqli_error($conn));
-        }
-
-        $lrSerial = $newLR;
     } else {
-        // Insert initial LR number for the day
-        $lrSerial = '001';
-        $insertLRQry = "INSERT INTO lr_number (DATE, LR_NUMBER, STATUS) VALUES ('$cdate', '$lrSerial', 0)";
-        if (!mysqli_query($conn, $insertLRQry)) {
-            throw new Exception("Failed to insert LR number: " . mysqli_error($conn));
-        }
+        // No record yet, start from 001
+        $newLR = '001';
     }
 
-    // Construct final LR number format
-    $finalLRNumber = 'ZH-' . $datePart . '-' . $lrSerial;
+    // Insert the new LR number
+    $insertQry = "INSERT INTO lr_number (LR_NUMBER, STATUS) VALUES ('$newLR', 0)";
+    if (!mysqli_query($conn, $insertQry)) {
+        throw new Exception("Failed to insert LR number: " . mysqli_error($conn));
+    }
+
+    // Return final LR format
+    $finalLRNumber = 'LR-' . $newLR;
     return $finalLRNumber;
 }
+
 
 //getItem
 if (isset($_GET['getItem'])) {
@@ -69,7 +101,8 @@ if (isset($_GET['getItem'])) {
 //Insert Booking Details
 if (isset($_POST['addNewBooking'])) {
 
-    $bille_no = $_POST['bille_no'];
+    $fromBranchId = $_POST['fromBranchId'];
+    $bill_no = $_POST['bill_no'];
     $manual_lr = $_POST['manual_lr'];
     $payment_type = $_POST['payment_type'];
     $payment_method = $_POST['payment_method'];
@@ -83,7 +116,7 @@ if (isset($_POST['addNewBooking'])) {
     $to_customer = $_POST['to_customer'];
     $to_state = $_POST['to_state'];
     $district = $_POST['district'];
-    $rount_name = $_POST['rount_name'];
+    $route_name = $_POST['route_name'];
     $dcc = $_POST['dcc'];
     $transport_type = $_POST['transport_type'];
     $total_fright = $_POST['total_fright'];
@@ -92,13 +125,12 @@ if (isset($_POST['addNewBooking'])) {
     $lr_amount = $_POST['lr_amount'];
     $amount = $_POST['amount'];
     $items = $_POST['items'];
-
     try {
         if (isset($conn)) {
-          
-                $lrNumber = getLrNumber($conn);
-            
-          
+
+            $lrNumber = getLrNumber($conn);
+
+
             // Convert items array to JSON string for database storage
             $itemsJson = json_encode($items);
 
@@ -115,9 +147,9 @@ if (isset($_POST['addNewBooking'])) {
                 'TO_MOBILE' => $to_mobile,
                 'TO_NAME' => $to_name,
                 'IS_TO_PAYMENT_CUSTOMER' => $to_customer,
-                'FROM_BRANCH_ID' => 0,
-                'TO_BRANCH_ID' => 0,
-                'ITEMS' => $itemsJson, // Use JSON string instead of array
+                'FROM_BRANCH_ID' => $fromBranchId,
+                'TO_BRANCH_ID' => $route_name,
+                'ITEMS' => $itemsJson,
                 'DCC' => $dcc,
                 'TRANSPORT_TYPE' => $transport_type,
                 'FRIGHT' => $total_fright,
@@ -127,12 +159,10 @@ if (isset($_POST['addNewBooking'])) {
                 'TOTAL_AMOUNT' => $amount,
                 'VERSION' => 0,
             );
-            
             $response = $dbOperator->insertData("booking", $bookingData);
             $bookingId = trim($response);
             // mysqli_commit($conn);
             print_r($bookingId);
-          
         }
     } catch (Exception $e) {
         if (isset($conn)) {
@@ -142,10 +172,10 @@ if (isset($_POST['addNewBooking'])) {
     }
 }
 //update Booking Details
-
 if (isset($_POST['updateNewBooking'])) {
+    $fromBranchId = $_POST['fromBranchId'];
     $bookingId = $_POST['booking_id'];
-    $bille_no = $_POST['bille_no'];
+    $bill_no = $_POST['bill_no'];
     $manual_lr = $_POST['manual_lr'];
     $payment_type = $_POST['payment_type'];
     $payment_method = $_POST['payment_method'];
@@ -159,25 +189,21 @@ if (isset($_POST['updateNewBooking'])) {
     $to_customer = $_POST['to_customer'];
     $to_state = $_POST['to_state'];
     $district = $_POST['district'];
-    $rount_name = $_POST['rount_name'];
+    $route_name = $_POST['route_name'];
     $dcc = $_POST['dcc'];
-    $transport_type = $_POST['transport_type'];
-    $total_fright = $_POST['total_fright'];
+    $transport_type = $_POST['transportType'];
+    $total_fright = $_POST['totalFright'];
     $loading = $_POST['loading'];
     $unloading = $_POST['unloading'];
-    $lr_amount = $_POST['lr_amount'];
+    $lr_amount = $_POST['lrAmount'];
     $amount = $_POST['amount'];
     $items = $_POST['items'];
 
     try {
         if (isset($conn)) {
-          
-                $lrNumber = getLrNumber($conn);
-            
-          
-            // Convert items array to JSON string for database storage
-            $itemsJson = json_encode($items);
 
+            $lrNumber = getLrNumber($conn);
+            $itemsJson = json_encode($items);
             $bookingData = array(
                 'LR_NUMBER' => $lrNumber,
                 'MANUAL_LR_NUMBER' => $manual_lr,
@@ -191,28 +217,22 @@ if (isset($_POST['updateNewBooking'])) {
                 'TO_MOBILE' => $to_mobile,
                 'TO_NAME' => $to_name,
                 'IS_TO_PAYMENT_CUSTOMER' => $to_customer,
-                'FROM_BRANCH_ID' => 0,
-                'TO_BRANCH_ID' => 0,
-                'ITEMS' => $itemsJson, 
+                'FROM_BRANCH_ID' => $fromBranchId,
+                'TO_BRANCH_ID' => $route_name,
+                'ITEMS' => $itemsJson,
                 'DCC' => $dcc,
                 'TRANSPORT_TYPE' => $transport_type,
                 'FRIGHT' => $total_fright,
                 'LOADING' => $loading,
                 'UNLOADING' => $unloading,
                 'LR_AMOUNT' => $lr_amount,
-                'TOTAL_AMOUNT' => $amount,
-                'VERSION' => 0,
+                'TOTAL_AMOUNT' => $amount
             );
-
-            $bookingId = trim($bookingId); 
             $where = array(
                 "BOOKING_ID" => $bookingId
             );
-            
             $dbOperator->insertData("booking_history", $bookingData);
-            echo $dbOperator->updateData("booking", $bookingData,$where);
-            
-          
+            echo $dbOperator->updateData("booking", $bookingData, $where);
         }
     } catch (Exception $e) {
         if (isset($conn)) {
@@ -221,6 +241,7 @@ if (isset($_POST['updateNewBooking'])) {
         print_r("Error Occurred: " . $e->getMessage());
     }
 }
+
 if (isset($_POST['forBookingList'])) {
     $bookingId = $_POST['bookingId'];
     $selectSql = "SELECT * FROM booking WHERE BOOKING_ID = $bookingId";
@@ -229,11 +250,12 @@ if (isset($_POST['forBookingList'])) {
         if (mysqli_num_rows($result) > 0) {
             while ($row = mysqli_fetch_array($result)) {
 
-            $itemsJson = json_encode($row['ITEMS']);
+                $itemsJson = json_encode($row['ITEMS']);
 
                 $bookingDetails['BOOKING_ID'] = $row['BOOKING_ID'];
                 $bookingDetails['BOOKING_DATETIME'] = $row['BOOKING_DATETIME'];
                 $bookingDetails['MANUAL_LR_NUMBER'] = $row['MANUAL_LR_NUMBER'];
+                $bookingDetails['LR_NUMBER'] = $row['LR_NUMBER'];
                 $bookingDetails['CUSTOMER_INVOICE_NUMBER'] = $row['CUSTOMER_INVOICE_NUMBER'];
                 $bookingDetails['CUSTOMER_INVOICE_VALUE'] = $row['CUSTOMER_INVOICE_VALUE'];
                 $bookingDetails['FROM_NAME'] = $row['FROM_NAME'];
@@ -249,7 +271,7 @@ if (isset($_POST['forBookingList'])) {
                 $bookingDetails['LR_AMOUNT'] = $row['LR_AMOUNT'];
                 $bookingDetails['LOADING'] = $row['LOADING'];
                 $bookingDetails['UNLOADING'] = $row['UNLOADING'];
-               
+                $bookingDetails['DCC'] = $row['DCC'];
             }
         }
     }

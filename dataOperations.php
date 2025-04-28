@@ -157,7 +157,7 @@ if (isset($_POST['getRouteName'])) {
     $stmt->execute();
     $result = $stmt->get_result();
 
-    while ($row = $result->fetch_assoc()) {
+    while ($row = $result->fetch_assoc()) { 
         echo '<option value="' . $row['BRANCH_ID'] . '">' . $row['ROUTE_NAME'] . '</option>';
     }
     $stmt->close();
@@ -248,34 +248,34 @@ if (isset($_POST['addBranchDetails'])) {
 
 // Fetch Mobile list
 if (isset($_GET['getMobile'])) {
-    $sql = "SELECT DISTINCT FROM_MOBILE FROM booking";
+    $sql = "SELECT DISTINCT MOBILE FROM customer_details";
     $result = $conn->query($sql);
 
     while ($row = $result->fetch_assoc()) {
-        echo '<option value="' . htmlspecialchars($row['FROM_MOBILE']) . '">' . htmlspecialchars($row['FROM_MOBILE']) . '</option>';
+        echo '<option value="' . htmlspecialchars($row['MOBILE']) . '">' . htmlspecialchars($row['MOBILE']) . '</option>';
     }
     exit;
 }
 
 // Fetch Name list
 if (isset($_GET['getname'])) {
-    $sql = "SELECT DISTINCT FROM_NAME FROM booking ";
+    $sql = "SELECT DISTINCT CUSTOMER_NAME FROM customer_details ";
     $result = $conn->query($sql);
 
     while ($row = $result->fetch_assoc()) {
-        echo '<option value="' . htmlspecialchars($row['FROM_NAME']) . '">' . htmlspecialchars($row['FROM_NAME']) . '</option>';
+        echo '<option value="' . htmlspecialchars($row['CUSTOMER_NAME']) . '">' . htmlspecialchars($row['CUSTOMER_NAME']) . '</option>';
     }
     exit;
 }
 
 // Mapping mobile to name
 if (isset($_GET['getMobileNameMapping'])) {
-    $sql = "SELECT FROM_MOBILE, FROM_NAME FROM booking";
+    $sql = "SELECT MOBILE, CUSTOMER_NAME FROM customer_details";
     $result = $conn->query($sql);
 
     $map = [];
     while ($row = $result->fetch_assoc()) {
-        $map[$row['FROM_MOBILE']] = $row['FROM_NAME'];
+        $map[$row['MOBILE']] = $row['CUSTOMER_NAME'];
     }
     echo json_encode($map);
     exit;
@@ -283,34 +283,34 @@ if (isset($_GET['getMobileNameMapping'])) {
 
 // Fetch To Mobile list
 if (isset($_GET['getToMobile'])) {
-    $sql = "SELECT DISTINCT TO_MOBILE FROM booking";
+    $sql = "SELECT DISTINCT MOBILE FROM customer_details";
     $result = $conn->query($sql);
 
     while ($row = $result->fetch_assoc()) {
-        echo '<option value="' . htmlspecialchars($row['TO_MOBILE']) . '">' . htmlspecialchars($row['TO_MOBILE']) . '</option>';
+        echo '<option value="' . htmlspecialchars($row['MOBILE']) . '">' . htmlspecialchars($row['MOBILE']) . '</option>';
     }
     exit;
 }
 
 // Fetch To Name list
 if (isset($_GET['getToname'])) {
-    $sql = "SELECT DISTINCT TO_NAME FROM booking ";
+    $sql = "SELECT DISTINCT CUSTOMER_NAME FROM customer_details ";
     $result = $conn->query($sql);
 
     while ($row = $result->fetch_assoc()) {
-        echo '<option value="' . htmlspecialchars($row['TO_NAME']) . '">' . htmlspecialchars($row['TO_NAME']) . '</option>';
+        echo '<option value="' . htmlspecialchars($row['CUSTOMER_NAME']) . '">' . htmlspecialchars($row['CUSTOMER_NAME']) . '</option>';
     }
     exit;
 }
 
 // Mapping To mobile to name
 if (isset($_GET['getToMobileNameMapping'])) {
-    $sql = "SELECT TO_MOBILE, TO_NAME FROM booking";
+    $sql = "SELECT MOBILE, CUSTOMER_NAME FROM customer_details";
     $result = $conn->query($sql);
 
     $map = [];
     while ($row = $result->fetch_assoc()) {
-        $map[$row['TO_MOBILE']] = $row['TO_NAME'];
+        $map[$row['MOBILE']] = $row['CUSTOMER_NAME'];
     }
     echo json_encode($map);
     exit;
