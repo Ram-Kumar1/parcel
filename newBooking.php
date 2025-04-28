@@ -1,13 +1,5 @@
-<?php
-
-
-
-?>
-
 <!DOCTYPE html>
-
 <html lang="en">
-
 <style>
     hr {
         margin-top: 1rem;
@@ -42,7 +34,35 @@
     }
 </style>
 
+<script>
+    let customerNameMobileMap = {};
+    let tocustomerNameMobileMap = {};
+    let customerMobileNameMap = {};
+    let tocustomerMobileNameMap = {};
 
+    let customerNameSelectChanged = function(select) {
+        let selectVal = $(select).val();
+        $("#fromMobile").val(customerNameMobileMap[selectVal]);
+    };
+    let tocustomerNameSelectChanged = function(select) {
+        let selectVal = $(select).val();
+        $("#toMobile").val(tocustomerNameMobileMap[selectVal]);
+    };
+
+    let mobileNumberChanged = function(select) {
+        let selectVal = $(select).val();
+        $("#fromName").select2({
+            tags: true
+        }).val(customerMobileNameMap[selectVal]).trigger('change');
+    };
+
+    let tomobileNumberChanged = function(select) {
+        let selectVal = $(select).val();
+        $("#toName").select2({
+            tags: true
+        }).val(tocustomerMobileNameMap[selectVal]).trigger('change');
+    };
+</script>
 
 <body>
 
@@ -66,7 +86,22 @@
     ***********************************-->
     <div id="main-wrapper">
 
-        <?php include 'header.php'; ?>
+        <?php include 'header.php'; 
+        
+        $userName = $_SESSION['userName'];
+        $branchName = $_SESSION['admin'];
+
+        $getFromBranchId = "SELECT BRANCH_ID FROM branches WHERE ROUTE_NAME = ?";
+        $stmt = $conn->prepare($getFromBranchId);
+        $stmt->bind_param("s", $branchName);
+        $stmt->execute();
+        $result = $stmt->get_result();
+    
+        while ($row = $result->fetch_assoc()) {
+            $fromBranchId = $row['BRANCH_ID'];
+          
+        }
+        ?>
 
         <!--**********************************
              Content body start
@@ -81,7 +116,7 @@
                                     <div class="row">
                                         <div class="col-12 d-flex justify-content-between align-items-center">
                                             <div class="flex-grow-1 text-center">
-                                                <h2 class="m-t-p5 mb-4">NEW BOOKING</h2>
+                                                <h2 class="m-t-p5 mb-4">NEW BOOKING</h2>  
                                             </div>
                                             <button type="button" class="btn btn-info btn-md" onclick="window.location.href='viewBookingList.php'">
                                                 <i class="fa fa-eye" aria-hidden="true" style="font-size: medium !important;"></i>
@@ -92,34 +127,32 @@
                                         <div class="position-center">
                                             <div class="row">
                                                 <div class="col-12 col-sm-4">
-
                                                     <div class="form-group">
                                                         <label for="">Date & Time<span class="mandatory-field text-danger">*</span></label>
-                                                        <input type="text" required class="form-control" id="date_time" value="<?php date_default_timezone_set('Asia/Kolkata');
-                                                                                                                                echo date('d-m-Y & h:i:s A'); ?>" name="date_time" readonly />
+                                                        <input type="text" required class="form-control" id="dateTime" value="<?php date_default_timezone_set('Asia/Kolkata');
+                                                                                                                                echo date('d-m-Y & h:i:s A'); ?>" name="dateTime" readonly />
                                                     </div>
                                                 </div>
                                                 <div class="col-12 col-sm-4">
-
                                                     <div class="form-group">
                                                         <label for="">Bill No<span class="mandatory-field text-danger">*</span></label>
-                                                        <input type="text" required class="form-control" id="bille_no" placeholder="Auto Generate"
-                                                            value="LR00" name="bille_no" readonly <?php echo "" ?> />
+                                                        <input type="text" required class="form-control" id="billNo" placeholder="Auto Generate"
+                                                        value="01"     name="billNo" readonly />
                                                     </div>
                                                 </div>
                                                 <div class="col-12 col-sm-4">
-
                                                     <div class="form-group">
                                                         <label for="">Manual Lr<span class="mandatory-field text-danger"></span></label>
-                                                        <input type="text" required class="form-control" id="manual_lr"
-                                                            placeholder="Enter Lr Number" name="manual_lr" />
+                                                        <input type="text" required class="form-control" id="manualLr"
+                                                            placeholder="Enter Lr Number" name="manualLr" />
                                                     </div>
                                                 </div>
+                                            </div>
+                                            <div class="row">
                                                 <div class="col-12 col-sm-4">
-
                                                     <div class="form-group">
-                                                        <label for="payment-type">Payment Type<span class="mandatory-field text-danger">*</span></label><br>
-                                                        <select class="form-control" id="payment-type" name="paymenttt-type" required>
+                                                        <label for="paymentType">Payment Type<span class="mandatory-field text-danger">*</span></label><br>
+                                                        <select class="form-control" id="paymentType" name="paymentType" required>
                                                             <option value="">-- SELECT PAYMENT --</option>
                                                             <option value="PAID">Paid</option>
                                                             <option value="TO_PAY">To Pay</option>
@@ -128,10 +161,9 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-12 col-sm-4">
-
                                                     <div class="form-group">
-                                                        <label for="payment-method">Payment Method<span class="mandatory-field text-danger">*</span></label><br>
-                                                        <select class="form-control" id="payment-method" name="payment-method" required>
+                                                        <label for="paymentMethod">Payment Method<span class="mandatory-field text-danger">*</span></label><br>
+                                                        <select class="form-control" id="paymentMethod" name="paymentMethod" required>
                                                             <option value="">-- SELECT PAYMENT --</option>
                                                             <option value="ONLINE">Online</option>
                                                             <option value="CASE">Cash</option>
@@ -139,19 +171,17 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-12 col-sm-4">
-
                                                     <div class="form-group">
                                                         <label for="">Cust Invoice Number<span class="mandatory-field text-danger">*</span></label>
-                                                        <input type="text" required class="form-control" id="invoice_number"
-                                                            placeholder="Enter Cust Invoice Number" name="invoice_number" />
+                                                        <input type="text" required class="form-control" id="invoiceNumber"
+                                                            placeholder="Enter Cust Invoice Number" name="invoiceNumber" />
                                                     </div>
                                                 </div>
                                                 <div class="col-12 col-sm-4">
-
                                                     <div class="form-group">
                                                         <label for="">Cust Invoice Value<span class="mandatory-field text-danger">*</span></label>
-                                                        <input type="text" required class="form-control" id="cust_invoice_values"
-                                                            placeholder="Enter Cust Invoice Value" name="cust_invoice_values" />
+                                                        <input type="text" required class="form-control" id="custInvoiceValues"
+                                                            placeholder="Enter Cust Invoice Value" name="custInvoiceValues" />
                                                     </div>
                                                 </div>
                                             </div>
@@ -161,62 +191,109 @@
                                                 <div class="col-12 col-sm-4">
                                                     <div class="form-group">
                                                         <label>From Mobile<span class="mandatory-field text-danger">*</span></label>
-                                                        <!-- SELECT for choosing existing mobile -->
-                                                        <select id="from_mobile_select" class="form-control">
-                                                            <option value="">Select Mobile</option>
+                                                        <select class="form-control" id="fromMobile" name="fromMobile" onchange="mobileNumberChanged(this)">
+                                                            <option value="">-- SELECT FROM MOBILE --</option>
+                                                            <?php
+                                                            $selectCity = "SELECT DISTINCT TRIM(CUSTOMER_NAME) AS CUSTOMER_NAME, MOBILE FROM customer_details ORDER BY 2";
+                                                            if ($result = mysqli_query($conn, $selectCity)) {
+                                                                if (mysqli_num_rows($result) > 0) {
+                                                                    while ($row = mysqli_fetch_array($result)) {
+                                                            ?>
+                                                                        <option value="<?php echo $row['MOBILE'] ?>"><?php echo $row['MOBILE'] ?></option>
+                                                                        <script>
+                                                                            customerMobileNameMap[<?php echo "'" . $row['MOBILE'] . "'"; ?>] = <?php echo "'" . $row['CUSTOMER_NAME'] . "'"; ?>
+                                                                        </script>
+                                                            <?php
+                                                                    }
+                                                                }
+                                                            }
+                                                            ?>
                                                         </select>
-                                                        <!-- INPUT for typing new mobile -->
-                                                        <input type="number" class="form-control mt-2" id="from_mobile_input"
-                                                            minlength="10" maxlength="10" oninput="this.value=this.value.slice(0,10)"
-                                                            placeholder="Enter Mobile Number" />
                                                     </div>
                                                 </div>
 
                                                 <div class="col-12 col-sm-4">
                                                     <div class="form-group">
                                                         <label>From Name<span class="mandatory-field text-danger">*</span></label>
-                                                        <!-- SELECT for choosing existing name -->
-                                                        <select id="from_name_select" class="form-control">
-                                                            <option value="">Select Name</option>
+                                                        <select class="form-control" id="fromName" name="fromName" onchange="customerNameSelectChanged(this)">
+                                                            <option value="">-- SELECT FROM NAME --</option>
+                                                            <?php
+                                                            $selectCity = "SELECT CUSTOMER_ID, TRIM(CUSTOMER_NAME) AS CUSTOMER_NAME, MOBILE FROM customer_details ORDER BY 2";
+                                                            if ($result = mysqli_query($conn, $selectCity)) {
+                                                                if (mysqli_num_rows($result) > 0) {
+                                                                    while ($row = mysqli_fetch_array($result)) {
+                                                            ?>
+                                                                        <option value="<?php echo $row['CUSTOMER_NAME'] ?>"><?php echo $row['CUSTOMER_NAME'] ?></option>
+                                                                        <script>
+                                                                            customerNameMobileMap[<?php echo "'" . $row['CUSTOMER_NAME'] . "'"; ?>] = <?php echo "'" . $row['MOBILE'] . "'"; ?>
+                                                                        </script>
+                                                            <?php
+                                                                    }
+                                                                }
+                                                            }
+                                                            ?>
                                                         </select>
-                                                        <!-- INPUT for typing new name -->
-                                                        <input type="text" class="form-control mt-2" id="from_name_input"
-                                                            placeholder="Enter Sender Name" />
                                                     </div>
                                                 </div>
-
 
                                                 <div class="col-12 col-sm-4">
                                                     <div class="form-group">
                                                         <label for="">Payment Customer<span class="mandatory-field text-danger">*</span></label><br>
-                                                        <input type="checkbox" name="from_customer" id="from_customer"> &nbsp; <label for="payment_customer">From Customer?</label>
+                                                        <input type="checkbox" name="fromCustomer" id="fromCustomer"> &nbsp; <label for="paymentCustomer">From Customer?</label>
                                                     </div>
                                                 </div>
-
+                                            </div>
+                                            <div class="row">
                                                 <div class="col-12 col-sm-4">
                                                     <div class="form-group">
                                                         <label for="">To Mobile<span class="mandatory-field text-danger">*</span></label>
-                                                        <select id="to_mobile_select" class="form-control">
-                                                            <option value="">Select Mobile</option>
+                                                        <select class="form-control" id="toMobile" name="toMobile" onchange="tomobileNumberChanged(this)" required>
+                                                            <option value="">-- SELECT TO MOBILE --</option>
+                                                            <?php
+                                                            $selectCity = "SELECT DISTINCT TRIM(CUSTOMER_NAME) AS CUSTOMER_NAME, MOBILE FROM customer_details ORDER BY 2";
+                                                            if ($result = mysqli_query($conn, $selectCity)) {
+                                                                if (mysqli_num_rows($result) > 0) {
+                                                                    while ($row = mysqli_fetch_array($result)) {
+                                                            ?>
+                                                                        <option value="<?php echo $row['MOBILE'] ?>"><?php echo $row['MOBILE'] ?></option>
+                                                                        <script>
+                                                                            tocustomerMobileNameMap[<?php echo "'" . $row['MOBILE'] . "'"; ?>] = <?php echo "'" . $row['CUSTOMER_NAME'] . "'"; ?>
+                                                                        </script>
+                                                            <?php
+                                                                    }
+                                                                }
+                                                            }
+                                                            ?>
                                                         </select>
-                                                        <input type="number" required class="form-control mt-2" id="to_mobile_input" minlength="10" maxlength="10" oninput="this.value=this.value.slice(0,10)"
-                                                            placeholder="Enter Mobile Number" name="to_mobile_input" />
                                                     </div>
                                                 </div>
                                                 <div class="col-12 col-sm-4">
                                                     <div class="form-group">
                                                         <label for="">To Name<span class="mandatory-field text-danger">*</span></label>
-                                                        <select id="to_name_select" class="form-control">
-                                                            <option value="">Select Name</option>
+                                                        <select class="form-control" id="toName" name="toName" onchange="tocustomerNameSelectChanged(this)">
+                                                            <option value="">-- SELECT TO NAME --</option>
+                                                            <?php
+                                                            $selectCity = "SELECT CUSTOMER_ID, TRIM(CUSTOMER_NAME) AS CUSTOMER_NAME, MOBILE FROM customer_details ORDER BY 2";
+                                                            if ($result = mysqli_query($conn, $selectCity)) {
+                                                                if (mysqli_num_rows($result) > 0) {
+                                                                    while ($row = mysqli_fetch_array($result)) {
+                                                            ?>
+                                                                        <option value="<?php echo $row['CUSTOMER_NAME'] ?>"><?php echo $row['CUSTOMER_NAME'] ?></option>
+                                                                        <script>
+                                                                            tocustomerNameMobileMap[<?php echo "'" . $row['CUSTOMER_NAME'] . "'"; ?>] = <?php echo "'" . $row['MOBILE'] . "'"; ?>
+                                                                        </script>
+                                                            <?php
+                                                                    }
+                                                                }
+                                                            }
+                                                            ?>
                                                         </select>
-                                                        <input type="text" required class="form-control mt-2" id="to_name_input"
-                                                            placeholder="Enter Receiver Name" name="to_name_input" />
                                                     </div>
                                                 </div>
                                                 <div class="col-12 col-sm-4">
                                                     <div class="form-group">
                                                         <label for="">Payment Customer<span class="mandatory-field text-danger">*</span></label><br>
-                                                        <input type="checkbox" name="to_customer" id="to_customer"> &nbsp; <label for="payment_customer">To Customer?</label>
+                                                        <input type="checkbox" name="toCustomer" id="toCustomer"> &nbsp; <label for="paymentCustomer">To Customer?</label>
                                                     </div>
                                                 </div>
                                             </div>
@@ -225,7 +302,7 @@
                                                 <div class="col-12 col-sm-4">
                                                     <div class="form-group">
                                                         <label for="state">To State<span class="mandatory-field text-danger">*</span></label><br>
-                                                        <select class="form-control" id="to_state" name="to_state" required>
+                                                        <select class="form-control" id="toState" name="toState" required>
                                                             <option value="">-- SELECT TO STATE --</option>
                                                         </select>
                                                     </div>
@@ -240,8 +317,8 @@
                                                 </div>
                                                 <div class="col-12 col-sm-4">
                                                     <div class="form-group">
-                                                        <label for="route-name">Route Name<span class="mandatory-field text-danger">*</span></label><br>
-                                                        <select class="form-control" id="rount_name" name="rount_name" required>
+                                                        <label for="routeName">Route Name<span class="mandatory-field text-danger">*</span></label><br>
+                                                        <select class="form-control" id="routeName" name="routeName" required>
                                                             <option value="">-- SELECT ROUTE --</option>
                                                         </select>
                                                     </div>
@@ -253,8 +330,6 @@
                                                     <i class="fa fa-plus"></i> Add Row
                                                 </button>
                                             </div>
-                                            <!-- <div id="table-data" class="table-responsive filterable max-30">
-                                                <table class="table table-striped tableFixHead" id="itemTable"> -->
                                             <div class="table-responsive">
                                                 <table class="table" id="itemTable">
                                                     <thead class="thead-light">
@@ -274,7 +349,6 @@
                                             <hr>
                                             <div class="row">
                                                 <div class="col-12 col-sm-4">
-
                                                     <div class="form-group">
                                                         <label for="">DCC<span class="mandatory-field text-danger"></span></label>
                                                         <input type="text" required class="form-control" id="dcc"
@@ -282,10 +356,9 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-12 col-sm-4">
-
                                                     <div class="form-group">
                                                         <label for="">Transport Type<span class="mandatory-field text-danger">*</span></label>
-                                                        <select class="form-control" id="transport_type" name="transport_type" required>
+                                                        <select class="form-control" id="transportType" name="transportType" required>
                                                             <option value="">-- SELECT TRANSPORT TYPE --</option>
                                                             <option value="DD">DD</option>
                                                             <option value="LINE">LINE</option>
@@ -296,10 +369,11 @@
                                                 <div class="col-12 col-sm-4">
                                                     <div class="form-group">
                                                         <label for="">Total Fright<span class="mandatory-field text-danger">*</span></label>
-                                                        <input type="text" required class="form-control" id="total_fright" name="fright" readonly />
+                                                        <input type="text" required class="form-control" id="totalFright" name="totalFright" readonly />
                                                     </div>
                                                 </div>
-
+                                            </div>
+                                            <div class="row">
                                                 <div class="col-12 col-sm-4">
                                                     <div class="form-group">
                                                         <label for="">Loading<span class="mandatory-field text-danger"></span></label>
@@ -317,8 +391,8 @@
                                                 <div class="col-12 col-sm-4">
                                                     <div class="form-group">
                                                         <label for="">LR Amount<span class="mandatory-field text-danger"></span></label>
-                                                        <input type="number" required class="form-control" id="lr_amount"
-                                                            name="lr_amount" readonly />
+                                                        <input type="number" required class="form-control" id="lrAmount"
+                                                            name="lrAmount" readonly />
                                                     </div>
                                                 </div>
 
@@ -354,41 +428,40 @@
 <!-- Prevent Number Scrolling -->
 <script src="./js/chits/numberInputPreventScroll.js"></script>
 <script>
+    //AddRow
     function addRow() {
-        const tableBody = document.querySelector('#itemTable tbody');
-        const row = document.createElement('tr');
-
-        row.innerHTML = `
-        <td class="text-center">
-            <select class="form-control w-100 item-select" name="item[]">
-                <option value="">--Select Particular--</option>
-            </select>
-        </td>
-        <td class="text-center">
-            <select class="form-control w-100 uom">
-                <option value="">--Select UOM--</option>
-                <option value="Kg">Kg</option>
-                <option value="Number">Number</option>
-            </select>
-        </td>
-        <td class="text-center"><input type="number" class="form-control w-100 qty" placeholder="Qty"></td>
-        <td class="text-center"><input type="number" class="form-control w-100 rate" placeholder="Rate"></td>
-        <td class="text-center"><input type="number" class="form-control w-100 weight" placeholder="Weight"></td>
-        <td class="text-center" style="font-size:20px">
-            <span onclick="clearRow(this)" style="cursor: pointer;">
-                <i class="fa fa-eraser text-primary"></i>
-            </span>&nbsp;&nbsp;
-            <span onclick="deleteRow(this)" style="cursor: pointer;">
-                <i class="fa fa-trash text-danger"></i>
-            </span>
-        </td>
-     <input type="hidden" class="form-control w-100 freight" readonly>
-
-             `;
-        tableBody.appendChild(row);
-        loadItemOptions($('.item-select').last());
+        const tableBody = $('#itemTable tbody');
+        const row = $(`
+        <tr>
+            <td class="text-center">
+                <select class="form-control w-100 item-select" name="item[]">
+                    <option value="">--Select Particular--</option>
+                </select>
+            </td>
+            <td class="text-center">
+                <select class="form-control w-100 uom">
+                    <option value="">--Select UOM--</option>
+                    <option value="Kg">Kg</option>
+                    <option value="Number">Number</option>
+                </select>
+            </td>
+            <td class="text-center"><input type="number" class="form-control w-100 qty" placeholder="Qty"></td>
+            <td class="text-center"><input type="number" class="form-control w-100 rate" placeholder="Rate"></td>
+            <td class="text-center"><input type="number" class="form-control w-100 weight" placeholder="Weight"></td>
+            <td class="text-center" style="font-size:20px">
+                <span class="clear-row" style="cursor: pointer;">
+                    <i class="fa fa-eraser text-primary"></i>
+                </span>&nbsp;&nbsp;
+                <span class="delete-row" style="cursor: pointer;">
+                    <i class="fa fa-trash text-danger"></i>
+                </span>
+            </td>
+            <input type="hidden" class="form-control w-100 freight" readonly>
+        </tr>
+         `);
+        tableBody.append(row);
+        loadItemOptions(row.find('.item-select'));
     }
-
     // Delete entire row
     function deleteRow(el) {
         $(el).closest('tr').remove();
@@ -404,7 +477,7 @@
         calculateTotalFreight();
     }
 
-    //Get Items
+    // Get Items
     function loadItemOptions(targetSelect = $('.item-select')) {
         $.ajax({
             url: 'bookingDataOperations.php',
@@ -425,11 +498,20 @@
 
     $(document).ready(function() {
         loadItemOptions();
+
+        // Delegate events for dynamically added buttons
+        $(document).on('click', '.delete-row', function() {
+            deleteRow(this);
+        });
+
+        $(document).on('click', '.clear-row', function() {
+            clearRow(this);
+        });
     });
 
-
-    //Get state and city and Rout
+    //Get state and City
     $(document).ready(function() {
+
         $.ajax({
             url: 'dataOperations.php',
             type: 'GET',
@@ -437,15 +519,16 @@
                 getStates: true
             },
             success: function(response) {
-                $('#to_state').append(response);
+                $('#toState').append(response);
             },
             error: function(xhr, status, error) {
-                console.error("Error loading states: " + error);
+                console.error("Error loading states:", error);
             }
         });
 
-        $('#to_state').change(function() {
-            var stateId = $(this).val();
+        // When State Changes -> Load Districts
+        $('#toState').on('change', function() {
+            const stateId = $(this).val();
             if (stateId) {
                 $.ajax({
                     url: 'dataOperations.php',
@@ -455,11 +538,10 @@
                         state_id: stateId
                     },
                     success: function(response) {
-                        $('#district').html('<option value="">-- SELECT DISTRICT --</option>');
-                        $('#district').append(response);
+                        $('#district').html('<option value="">-- SELECT DISTRICT --</option>').append(response);
                     },
                     error: function(xhr, status, error) {
-                        console.error("Error loading cities: " + error);
+                        console.error("Error loading cities:", error);
                         $('#district').html('<option value="">-- SELECT DISTRICT --</option>');
                     }
                 });
@@ -468,9 +550,10 @@
             }
         });
 
-        $('#district').change(function() {
-            var stateId = $('#to_state').val();
-            var districtId = $('#district').val();
+        // When District Changes -> Load Route Names
+        $('#district').on('change', function() {
+            const stateId = $('#toState').val();
+            const districtId = $(this).val();
             if (stateId && districtId) {
                 $.ajax({
                     url: 'dataOperations.php',
@@ -481,17 +564,17 @@
                         districtId: districtId
                     },
                     success: function(response) {
-                        $('#rount_name').html('<option value="">-- SELECT ROUTE --</option>');
-                        $('#rount_name').append(response);
+                        $('#routeName').html('<option value="">-- SELECT ROUTE --</option>').append(response);
                     },
                     error: function(xhr, status, error) {
-                        console.error("Error loading route: " + error);
-                        $('#rount_name').html('<option value="">-- SELECT ROUTE --</option>');
+                        console.error("Error loading route:", error);
+                        $('#routeName').html('<option value="">-- SELECT ROUTE --</option>');
                     }
                 });
             }
         });
     });
+
 
     // Calculate freight and totals
     $(document).ready(function() {
@@ -517,218 +600,53 @@
         });
     });
 
-    // Calculate total freight
+     // Calculate total freight
     function calculateTotalFreight() {
         let total = 0;
         $('.freight').each(function() {
             total += parseFloat($(this).val()) || 0;
         });
-        $('#total_fright').val(total.toFixed(2));
+        $('#totalFright').val(total.toFixed(2));
     }
-
-    //Get from Mobile list
-    $(document).ready(function() {
-        let mobileToName = {};
-
-        // Load dropdowns
-        $.ajax({
-            url: 'dataOperations.php',
-            data: {
-                getMobile: 1
-            },
-            type: 'GET',
-            success: function(res) {
-                $('#from_mobile_select').append(res);
-            }
-        });
-
-        $.ajax({
-            url: 'dataOperations.php',
-            data: {
-                getname: 1
-            },
-            type: 'GET',
-            success: function(res) {
-                $('#from_name_select').append(res);
-            }
-        });
-
-        // Load Mobile->Name map
-        $.ajax({
-            url: 'dataOperations.php',
-            data: {
-                getMobileNameMapping: 1
-            },
-            type: 'GET',
-            success: function(res) {
-                mobileToName = JSON.parse(res);
-            }
-        });
-
-        // When mobile is selected
-        $('#from_mobile_select').on('change', function() {
-            let selectedMobile = $(this).val();
-            if (selectedMobile && mobileToName[selectedMobile]) {
-                $('#from_name_select').val(mobileToName[selectedMobile]);
-                $('#from_mobile_input').val(selectedMobile);
-                $('#from_name_input').val(mobileToName[selectedMobile]);
-            }
-        });
-
-        // When name is selected
-        $('#from_name_select').on('change', function() {
-            let selectedName = $(this).val();
-            // Reverse search: find mobile by name
-            let foundMobile = null;
-            $.each(mobileToName, function(mobile, name) {
-                if (name === selectedName) {
-                    foundMobile = mobile;
-                    return false; // Break
-                }
-            });
-
-            if (foundMobile) {
-                $('#from_mobile_select').val(foundMobile);
-                $('#from_mobile_input').val(foundMobile);
-                $('#from_name_input').val(selectedName);
-            }
-        });
-
-        // When user manually types new mobile
-        $('#from_mobile_input').on('input', function() {
-            $('#from_mobile_select').val('');
-            $('#from_name_select').val('');
-            $('#from_name_input').val('');
-        });
-
-        // When user manually types new name
-        $('#from_name_input').on('input', function() {
-            $('#from_mobile_select').val('');
-            $('#from_name_select').val('');
-            $('#from_mobile_input').val('');
-        });
-    });
-
-    //Get to Mobile list
-    $(document).ready(function() {
-        let mobileToName = {};
-
-        // Load dropdowns
-        $.ajax({
-            url: 'dataOperations.php',
-            data: {
-                getToMobile: 1
-            },
-            type: 'GET',
-            success: function(res) {
-                $('#to_mobile_select').append(res);
-            }
-        });
-
-        $.ajax({
-            url: 'dataOperations.php',
-            data: {
-                getToname: 1
-            },
-            type: 'GET',
-            success: function(res) {
-                $('#to_name_select').append(res);
-            }
-        });
-
-        // Load Mobile->Name map
-        $.ajax({
-            url: 'dataOperations.php',
-            data: {
-                getToMobileNameMapping: 1
-            },
-            type: 'GET',
-            success: function(res) {
-                mobileToName = JSON.parse(res);
-            }
-        });
-
-        // When mobile is selected
-        $('#to_mobile_select').on('change', function() {
-            let selectedMobile = $(this).val();
-            if (selectedMobile && mobileToName[selectedMobile]) {
-                $('#to_name_select').val(mobileToName[selectedMobile]);
-                $('#to_mobile_input').val(selectedMobile);
-                $('#to_name_input').val(mobileToName[selectedMobile]);
-            }
-        });
-
-        // When name is selected
-        $('#to_name_select').on('change', function() {
-            let selectedName = $(this).val();
-            // Reverse search: find mobile by name
-            let foundMobile = null;
-            $.each(mobileToName, function(mobile, name) {
-                if (name === selectedName) {
-                    foundMobile = mobile;
-                    return false; // Break
-                }
-            });
-
-            if (foundMobile) {
-                $('#to_mobile_select').val(foundMobile);
-                $('#to_mobile_input').val(foundMobile);
-                $('#to_name_input').val(selectedName);
-            }
-        });
-
-        // When user manually types new mobile
-        $('#to_mobile_input').on('input', function() {
-            $('#to_mobile_select').val('');
-            $('#to_name_select').val('');
-            $('#to_name_input').val('');
-        });
-
-        // When user manually types new name
-        $('#from_name_input').on('input', function() {
-            $('#to_mobile_select').val('');
-            $('#to_name_select').val('');
-            $('#to_mobile_input').val('');
-        });
-    });
 
     //saveData
     function saveData() {
         // Validate required fields
+        var fromBranchId = '<?php echo $fromBranchId; ?>';
         const fields = [{
-                id: "payment-type",
+                id: "paymentType",
                 msg: "❌ Select Payment Type!"
             },
             {
-                id: "payment-method",
+                id: "paymentMethod",
                 msg: "❌ Select Payment Method!"
             },
             {
-                id: "invoice_number",
+                id: "invoiceNumber",
                 msg: "❌ Enter Customer Invoice Number!"
             },
             {
-                id: "cust_invoice_values",
+                id: "custInvoiceValues",
                 msg: "❌ Enter Customer Invoice Value!"
             },
             {
-                id: "from_mobile_input",
+                id: "fromMobile",
                 msg: "❌ Enter From Mobile Number!"
             },
             {
-                id: "from_name_input",
+                id: "fromName",
                 msg: "❌ Enter From Name!"
             },
             {
-                id: "to_mobile",
+                id: "toMobile",
                 msg: "❌ Enter To Mobile!"
             },
             {
-                id: "to_name",
+                id: "toName",
                 msg: "❌ Enter To Name!"
             },
             {
-                id: "to_state",
+                id: "toState",
                 msg: "❌ Select State!"
             },
             {
@@ -736,15 +654,15 @@
                 msg: "❌ Select District!"
             },
             {
-                id: "rount_name",
+                id: "routeName",
                 msg: "❌ Select Route!"
             },
             {
-                id: "transport_type",
+                id: "transportType",
                 msg: "❌ Select Transport Type!"
             },
             {
-                id: "total_fright",
+                id: "totalFright",
                 msg: "❌ Total Freight is required!"
             }
         ];
@@ -794,28 +712,29 @@
         // Prepare form data
         const formData = {
             addNewBooking: 1,
-            date_time: document.getElementById('date_time').value,
-            bille_no: document.getElementById('bille_no').value,
-            manual_lr: document.getElementById('manual_lr').value,
-            payment_type: document.getElementById('payment-type').value,
-            payment_method: document.getElementById('payment-method').value,
-            invoice_number: document.getElementById('invoice_number').value,
-            cust_invoice_values: document.getElementById('cust_invoice_values').value,
-            from_mobile: document.getElementById('from_mobile_input').value,
-            from_name: document.getElementById('from_name_input').value,
-            from_customer: document.getElementById('from_customer').checked ? 1 : 0,
-            to_mobile: document.getElementById('to_mobile').value,
-            to_name: document.getElementById('to_name').value,
-            to_customer: document.getElementById('to_customer').checked ? 1 : 0,
-            to_state: document.getElementById('to_state').value,
+            fromBranchId:fromBranchId,
+            date_time: document.getElementById('dateTime').value,
+            bill_no: document.getElementById('billNo').value,
+            manual_lr: document.getElementById('manualLr').value,
+            payment_type: document.getElementById('paymentType').value,
+            payment_method: document.getElementById('paymentMethod').value,
+            invoice_number: document.getElementById('invoiceNumber').value,
+            cust_invoice_values: document.getElementById('custInvoiceValues').value,
+            from_mobile: document.getElementById('fromMobile').value,
+            from_name: document.getElementById('fromName').value,
+            from_customer: document.getElementById('fromCustomer').checked ? 1 : 0,
+            to_mobile: document.getElementById('toMobile').value,
+            to_name: document.getElementById('toName').value,
+            to_customer: document.getElementById('toCustomer').checked ? 1 : 0,
+            to_state: document.getElementById('toState').value,
             district: document.getElementById('district').value,
-            rount_name: document.getElementById('rount_name').value,
+            route_name: document.getElementById('routeName').value,
             dcc: document.getElementById('dcc').value,
-            transport_type: document.getElementById('transport_type').value,
-            total_fright: document.getElementById('total_fright').value,
+            transport_type: document.getElementById('transportType').value,
+            total_fright: document.getElementById('totalFright').value,
             loading: document.getElementById('loading').value,
             unloading: document.getElementById('unloading').value,
-            lr_amount: document.getElementById('lr_amount').value,
+            lr_amount: document.getElementById('lrAmount').value,
             amount: document.getElementById('amount').value,
             items: items
         };
