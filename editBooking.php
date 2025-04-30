@@ -67,11 +67,14 @@ $city       = $branchData['CITY_NAME'] ?? '';
 
     #from_customer,
     #to_customer {
-        accent-color: black; /* For modern browsers */
+        accent-color: black;
+        /* For modern browsers */
         width: 18px;
         height: 18px;
-        border: 6px solid black; /* fallback for border */
-        appearance: none; /* remove default checkbox style */
+        border: 6px solid black;
+        /* fallback for border */
+        appearance: none;
+        /* remove default checkbox style */
         -webkit-appearance: none;
         -moz-appearance: none;
         border-radius: 3px;
@@ -97,12 +100,16 @@ $city       = $branchData['CITY_NAME'] ?? '';
 
     let mobileNumberChanged = function(select) {
         let selectVal = $(select).val();
-        $("#fromName").select2({ tags: true }).val(customerMobileNameMap[selectVal]).trigger('change');
+        $("#fromName").select2({
+            tags: true
+        }).val(customerMobileNameMap[selectVal]).trigger('change');
     };
 
     let tomobileNumberChanged = function(select) {
         let selectVal = $(select).val();
-        $("#toName").select2({ tags: true }).val(tocustomerMobileNameMap[selectVal]).trigger('change');
+        $("#toName").select2({
+            tags: true
+        }).val(tocustomerMobileNameMap[selectVal]).trigger('change');
     };
 </script>
 
@@ -151,7 +158,8 @@ $city       = $branchData['CITY_NAME'] ?? '';
                                                     <div class="form-group">
                                                         <label>Date & Time<span class="text-danger">*</span></label>
                                                         <input type="text" required class="form-control" id="dateTime"
-                                                            value="<?php date_default_timezone_set('Asia/Kolkata'); echo date('d-m-Y & h:i:s A'); ?>"
+                                                            value="<?php date_default_timezone_set('Asia/Kolkata');
+                                                                    echo date('d-m-Y & h:i:s A'); ?>"
                                                             name="dateTime" readonly />
                                                     </div>
                                                 </div>
@@ -506,7 +514,9 @@ $city       = $branchData['CITY_NAME'] ?? '';
             $.ajax({
                 url: 'bookingDataOperations.php',
                 type: 'GET',
-                data: { getItem: 1 },
+                data: {
+                    getItem: 1
+                },
                 success: function(response) {
                     targetSelect.each(function() {
                         const $this = $(this);
@@ -525,7 +535,9 @@ $city       = $branchData['CITY_NAME'] ?? '';
             $.ajax({
                 url: 'dataOperations.php',
                 type: 'GET',
-                data: { getStates: true },
+                data: {
+                    getStates: true
+                },
                 success: function(response) {
                     $('#toState').append(response);
                 }
@@ -538,7 +550,10 @@ $city       = $branchData['CITY_NAME'] ?? '';
                     $.ajax({
                         url: 'dataOperations.php',
                         type: 'POST',
-                        data: { getCities: true, state_id: stateId },
+                        data: {
+                            getCities: true,
+                            state_id: stateId
+                        },
                         success: function(resp) {
                             $('#district').append(resp);
                         }
@@ -554,7 +569,11 @@ $city       = $branchData['CITY_NAME'] ?? '';
                     $.ajax({
                         url: 'dataOperations.php',
                         type: 'POST',
-                        data: { getRouteName: 1, stateId, districtId },
+                        data: {
+                            getRouteName: 1,
+                            stateId,
+                            districtId
+                        },
                         success: function(resp) {
                             $('#routeName').append(resp);
                         }
@@ -566,54 +585,110 @@ $city       = $branchData['CITY_NAME'] ?? '';
             $("#data-table").ddTableFilter();
         });
 
-        // Calculate freight and totals
-    $(document).ready(function() {
-        $(document).on('input', '.qty, .rate', function() {
-            const row = $(this).closest('tr');
-            const qty = parseFloat(row.find('.qty').val()) || 0;
-            const rate = parseFloat(row.find('.rate').val()) || 0;
-            const freight = qty * rate;
+        $(document).ready(function() {
+            // Recalculate freight when rate or weight changes
+            $(document).on('input', '.rate, .weight', function() {
+                const row = $(this).closest('tr');
+                const rate = parseFloat(row.find('.rate').val()) || 0;
+                const weight = parseFloat(row.find('.weight').val()) || 0;
+                const freight = rate * weight;
 
-            row.find('.freight').val(freight.toFixed(2));
-            calculateTotalFreight();
+                row.find('.freight').val(freight.toFixed(2));
+                calculateTotalFreight(); // update total freight and final amount
+            });
+
+            // Optional: Auto-fill weight based on qty when UOM is Kg
+            $(document).on('input', '.qty', function() {
+                const row = $(this).closest('tr');
+                const qty = parseFloat(row.find('.qty').val()) || 0;
+                const uom = row.find('.uom').val();
+
+                if (uom === 'Kg') {
+                    row.find('.weight').val(qty).trigger('input'); // trigger to update freight
+                }
+            });
         });
 
-        // Calculate weight when qty changes (optional)
-        $(document).on('input', '.qty', function() {
-            const row = $(this).closest('tr');
-            const qty = parseFloat(row.find('.qty').val()) || 0;
-            const uom = row.find('.uom').val();
+        // Calculate total freight and update amount
+        function calculateTotalFreight() {
+            let total = 0;
+            $('.freight').each(function() {
+                total += parseFloat($(this).val()) || 0;
+            });
+            $('#totalFright').val(total.toFixed(2));
+            calculateAmount();
+        }
 
-            if (uom === 'Kg') {
-                row.find('.weight').val(qty);
-            }
-        });
-    });
+        // Calculate final amount
+        function calculateAmount() {
+            const totalFreight = parseFloat($('#totalFright').val()) || 0;
+            const loading = parseFloat($('#loading').val()) || 0;
+            const unloading = parseFloat($('#unloading').val()) || 0;
+            const lrAmount = parseFloat($('#lrAmount').val()) || 0;
 
-     // Calculate total freight
-    function calculateTotalFreight() {
-        let total = 0;
-        $('.freight').each(function() {
-            total += parseFloat($(this).val()) || 0;
+            const totalAmount = totalFreight + loading + unloading + lrAmount;
+            $('#amount').val(totalAmount.toFixed(2));
+        }
+
+        // Update amount if loading/unloading/lrAmount changes
+        $(document).on('input', '#loading, #unloading, #lrAmount', function() {
+            calculateAmount();
         });
-        $('#totalFright').val(total.toFixed(2));
-    }
+
 
         function updateData() {
-            const checks = [
-                { id: "paymentType",  msg: "Select Payment Type!" },
-                { id: "paymentMethod", msg: "Select Payment Method!" },
-                { id: "invoiceNumber", msg: "Enter Customer Invoice Number!" },
-                { id: "custInvoiceValues", msg: "Enter Customer Invoice Value!" },
-                { id: "fromMobile", msg: "Enter From Mobile Number!" },
-                { id: "fromName", msg: "Enter From Name!" },
-                { id: "toMobile", msg: "Enter To Mobile!" },
-                { id: "toName", msg: "Enter To Name!" },
-                { id: "toState", msg: "Select State!" },
-                { id: "district", msg: "Select District!" },
-                { id: "routeName", msg: "Select Route!" },
-                { id: "transportType", msg: "Select Transport Type!" },
-                { id: "totalFright", msg: "Total Freight is required!" }
+            const checks = [{
+                    id: "paymentType",
+                    msg: "Select Payment Type!"
+                },
+                {
+                    id: "paymentMethod",
+                    msg: "Select Payment Method!"
+                },
+                {
+                    id: "invoiceNumber",
+                    msg: "Enter Customer Invoice Number!"
+                },
+                {
+                    id: "custInvoiceValues",
+                    msg: "Enter Customer Invoice Value!"
+                },
+                {
+                    id: "fromMobile",
+                    msg: "Enter From Mobile Number!"
+                },
+                {
+                    id: "fromName",
+                    msg: "Enter From Name!"
+                },
+                {
+                    id: "toMobile",
+                    msg: "Enter To Mobile!"
+                },
+                {
+                    id: "toName",
+                    msg: "Enter To Name!"
+                },
+                {
+                    id: "toState",
+                    msg: "Select State!"
+                },
+                {
+                    id: "district",
+                    msg: "Select District!"
+                },
+                {
+                    id: "routeName",
+                    msg: "Select Route!"
+                },
+                {
+                    id: "transportType",
+                    msg: "Select Transport Type!"
+                },
+                {
+                    id: "totalFright",
+                    msg: "Total Freight is required!"
+                }
             ];
             for (let f of checks) {
                 let el = document.getElementById(f.id);
@@ -631,48 +706,54 @@ $city       = $branchData['CITY_NAME'] ?? '';
             const items = [];
             for (let [i, row] of rows.entries()) {
                 const part = row.querySelector('.item-select')?.value;
-                const uom  = row.querySelector('.uom')?.value;
-                const qty  = row.querySelector('.qty')?.value;
+                const uom = row.querySelector('.uom')?.value;
+                const qty = row.querySelector('.qty')?.value;
                 const rate = row.querySelector('.rate')?.value;
-                const wgt  = row.querySelector('.weight')?.value;
+                const wgt = row.querySelector('.weight')?.value;
                 if (!part || !uom || !qty || !rate || !wgt) {
                     alert(`❌ Please fill all fields in row ${i+1}!`);
                     return false;
                 }
-                items.push({ particular: part, uom, qty, rate, weight: wgt });
+                items.push({
+                    particular: part,
+                    uom,
+                    qty,
+                    rate,
+                    weight: wgt
+                });
             }
             const payload = {
                 updateNewBooking: 1,
-                fromBranchId:  document.getElementById('fromBranchId').value,
-                booking_id:    document.getElementById('booking_id').value,
-                date_time:     document.getElementById('dateTime').value,
-                bill_no:       document.getElementById('billNo').value,
-                manual_lr:     document.getElementById('manualLr').value,
-                payment_type:  document.getElementById('paymentType').value,
-                payment_method:document.getElementById('paymentMethod').value,
-                invoice_number:document.getElementById('invoiceNumber').value,
+                fromBranchId: document.getElementById('fromBranchId').value,
+                booking_id: document.getElementById('booking_id').value,
+                date_time: document.getElementById('dateTime').value,
+                bill_no: document.getElementById('billNo').value,
+                manual_lr: document.getElementById('manualLr').value,
+                payment_type: document.getElementById('paymentType').value,
+                payment_method: document.getElementById('paymentMethod').value,
+                invoice_number: document.getElementById('invoiceNumber').value,
                 cust_invoice_values: document.getElementById('custInvoiceValues').value,
-                from_mobile:   document.getElementById('fromMobile').value,
-                from_name:     document.getElementById('fromName').value,
+                from_mobile: document.getElementById('fromMobile').value,
+                from_name: document.getElementById('fromName').value,
                 from_customer: document.getElementById('fromCustomer').checked ? 1 : 0,
-                to_mobile:     document.getElementById('toMobile').value,
-                to_name:       document.getElementById('toName').value,
-                to_customer:   document.getElementById('toCustomer').checked ? 1 : 0,
-                to_state:      document.getElementById('toState').value,
-                district:      document.getElementById('district').value,
-                route_name:    document.getElementById('routeName').value,
-                dcc:           document.getElementById('dcc').value,
+                to_mobile: document.getElementById('toMobile').value,
+                to_name: document.getElementById('toName').value,
+                to_customer: document.getElementById('toCustomer').checked ? 1 : 0,
+                to_state: document.getElementById('toState').value,
+                district: document.getElementById('district').value,
+                route_name: document.getElementById('routeName').value,
+                dcc: document.getElementById('dcc').value,
                 transportType: document.getElementById('transportType').value,
-                totalFright:   document.getElementById('totalFright').value,
-                loading:       document.getElementById('loading').value,
-                unloading:     document.getElementById('unloading').value,
-                lrAmount:      document.getElementById('lrAmount').value,
-                amount:        document.getElementById('amount').value,
-                items:         items
+                totalFright: document.getElementById('totalFright').value,
+                loading: document.getElementById('loading').value,
+                unloading: document.getElementById('unloading').value,
+                lrAmount: document.getElementById('lrAmount').value,
+                amount: document.getElementById('amount').value,
+                items: items
             };
             $.ajax({
                 type: 'POST',
-                url:  'bookingDataOperations.php',
+                url: 'bookingDataOperations.php',
                 data: payload,
                 dataType: 'text',
                 success(resp) {
@@ -691,4 +772,5 @@ $city       = $branchData['CITY_NAME'] ?? '';
         }
     </script>
 </body>
+
 </html>

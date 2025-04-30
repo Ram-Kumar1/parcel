@@ -576,38 +576,55 @@
     });
 
 
-    // Calculate freight and totals
-    $(document).ready(function() {
-        $(document).on('input', '.qty, .rate', function() {
-            const row = $(this).closest('tr');
-            const qty = parseFloat(row.find('.qty').val()) || 0;
-            const rate = parseFloat(row.find('.rate').val()) || 0;
-            const freight = qty * rate;
+    $(document).ready(function () {
+    // Recalculate freight when rate or weight changes
+    $(document).on('input', '.rate, .weight', function () {
+        const row = $(this).closest('tr');
+        const rate = parseFloat(row.find('.rate').val()) || 0;
+        const weight = parseFloat(row.find('.weight').val()) || 0;
+        const freight = rate * weight;
 
-            row.find('.freight').val(freight.toFixed(2));
-            calculateTotalFreight();
-        });
-
-        // Calculate weight when qty changes (optional)
-        $(document).on('input', '.qty', function() {
-            const row = $(this).closest('tr');
-            const qty = parseFloat(row.find('.qty').val()) || 0;
-            const uom = row.find('.uom').val();
-
-            if (uom === 'Kg') {
-                row.find('.weight').val(qty);
-            }
-        });
+        row.find('.freight').val(freight.toFixed(2));
+        calculateTotalFreight(); // update total freight and final amount
     });
 
-     // Calculate total freight
-    function calculateTotalFreight() {
-        let total = 0;
-        $('.freight').each(function() {
-            total += parseFloat($(this).val()) || 0;
-        });
-        $('#totalFright').val(total.toFixed(2));
-    }
+    // Optional: Auto-fill weight based on qty when UOM is Kg
+    $(document).on('input', '.qty', function () {
+        const row = $(this).closest('tr');
+        const qty = parseFloat(row.find('.qty').val()) || 0;
+        const uom = row.find('.uom').val();
+
+        if (uom === 'Kg') {
+            row.find('.weight').val(qty).trigger('input'); // trigger to update freight
+        }
+    });
+});
+
+// Calculate total freight and update amount
+function calculateTotalFreight() {
+    let total = 0;
+    $('.freight').each(function () {
+        total += parseFloat($(this).val()) || 0;
+    });
+    $('#totalFright').val(total.toFixed(2));
+    calculateAmount();
+}
+
+// Calculate final amount
+function calculateAmount() {
+    const totalFreight = parseFloat($('#totalFright').val()) || 0;
+    const loading = parseFloat($('#loading').val()) || 0;
+    const unloading = parseFloat($('#unloading').val()) || 0;
+    const lrAmount = parseFloat($('#lrAmount').val()) || 0;
+
+    const totalAmount = totalFreight + loading + unloading + lrAmount;
+    $('#amount').val(totalAmount.toFixed(2));
+}
+
+// Update amount if loading/unloading/lrAmount changes
+$(document).on('input', '#loading, #unloading, #lrAmount', function () {
+    calculateAmount();
+});
 
     //saveData
     function saveData() {

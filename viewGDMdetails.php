@@ -29,18 +29,23 @@ if (isset($_GET['gdm'])) {
     $stmt->execute();
     $result = $stmt->get_result();
 
-    if ($data = $result->fetch_assoc()) {
-        $bookigData = $data;
-        $FromBranchName = $data['FROM_BRANCH_NAME'];
-        $toBranchName = $data['TO_BRANCH_NAME'];
-        $driverData = [
-            'DRIVER_NAME' => $data['DRIVER_NAME'],
-            'DRIVER_NUMBER' => $data['DRIVER_NUMBER'],
-            'VEHICLE_NUMBER' => $data['VEHICLE_NUMBER'],
-            'VEHICLE_NAME' => $data['VEHICLE_NAME'],
-        ];
+    $bookingData = [];
+    while ($row = $result->fetch_assoc()) {
+        $bookingData[] = $row;
+    
+        // Set driver info and branch names only once (from first row)
+        if (empty($driverData)) {
+            $FromBranchName = $row['FROM_BRANCH_NAME'];
+            $toBranchName = $row['TO_BRANCH_NAME'];
+            $driverData = [
+                'DRIVER_NAME' => $row['DRIVER_NAME'],
+                'DRIVER_NUMBER' => $row['DRIVER_NUMBER'],
+                'VEHICLE_NUMBER' => $row['VEHICLE_NUMBER'],
+                'VEHICLE_NAME' => $row['VEHICLE_NAME'],
+            ];
+        }
     }
-}
+}    
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -87,50 +92,61 @@ if (isset($_GET['gdm'])) {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <?php if (!empty($bookigData)) { ?>
-                                                <tr>
-                                                    <td><?= $bookigData['BOOKING_DATETIME'] ?></td>
-                                                    <td><?= $bookigData['LR_NUMBER'] ?></td>
-                                                    <td><?= $bookigData['MANUAL_LR_NUMBER'] ?></td>
-                                                    <td><?= $bookigData['PAYMENT_TYPE'] ?></td>
-                                                    <td><?= $bookigData['PAYMENT_METHOD'] ?></td>
-                                                    <td><?= $bookigData['CUSTOMER_INVOICE_NUMBER'] ?></td>
-                                                    <td><?= $bookigData['CUSTOMER_INVOICE_VALUE'] ?></td>
-                                                    <td><?= $bookigData['FROM_MOBILE'] ?></td>
-                                                    <td><?= $bookigData['FROM_NAME'] ?></td>
-                                                    <td><?= $bookigData['TO_MOBILE'] ?></td>
-                                                    <td><?= $bookigData['TO_NAME'] ?></td>
-                                                    <td><?= $FromBranchName ?></td>
-                                                    <td><?= $toBranchName ?></td>
-                                                    <td>
-                                                        <?php
-                                                        $items = json_decode($bookigData['ITEMS'], true);
-
-                                                        if (!empty($items) && is_array($items)) {
-                                                            foreach ($items as $index => $item) {
-                                                                echo "<strong>Item " . ($index + 1) . ":</strong> ";
-                                                                echo "Particular: " . htmlspecialchars($item['particular']) . ", ";
-                                                                echo "UOM: " . htmlspecialchars($item['uom']) . ", ";
-                                                                echo "Qty: " . htmlspecialchars($item['qty']) . ", ";
-                                                                echo "Rate: " . htmlspecialchars($item['rate']) . ", ";
-                                                                echo "Weight: " . htmlspecialchars($item['weight']) . "<br>";
+                                            <?php
+                                            $totalSum = 0;
+                                            if (!empty($bookingData)) {
+                                                foreach ($bookingData as $booking) {
+                                                    $totalSum += (float)$booking['TOTAL_AMOUNT'];
+                                            ?>
+                                                    <tr>
+                                                        <td><?= $booking['BOOKING_DATETIME'] ?></td>
+                                                        <td><?= $booking['LR_NUMBER'] ?></td>
+                                                        <td><?= $booking['MANUAL_LR_NUMBER'] ?></td>
+                                                        <td><?= $booking['PAYMENT_TYPE'] ?></td>
+                                                        <td><?= $booking['PAYMENT_METHOD'] ?></td>
+                                                        <td><?= $booking['CUSTOMER_INVOICE_NUMBER'] ?></td>
+                                                        <td><?= $booking['CUSTOMER_INVOICE_VALUE'] ?></td>
+                                                        <td><?= $booking['FROM_MOBILE'] ?></td>
+                                                        <td><?= $booking['FROM_NAME'] ?></td>
+                                                        <td><?= $booking['TO_NAME'] ?></td>
+                                                        <td><?= $booking['TO_MOBILE'] ?></td>
+                                                        <td><?= $FromBranchName ?></td>
+                                                        <td><?= $toBranchName ?></td>
+                                                        <td>
+                                                            <?php
+                                                            $items = json_decode($booking['ITEMS'], true);
+                                                            if (!empty($items)) {
+                                                                foreach ($items as $index => $item) {
+                                                                    echo "<strong>Item " . ($index + 1) . ":</strong> ";
+                                                                    echo "Particular: " . htmlspecialchars($item['particular']) . ", ";
+                                                                    echo "UOM: " . htmlspecialchars($item['uom']) . ", ";
+                                                                    echo "Qty: " . htmlspecialchars($item['qty']) . ", ";
+                                                                    echo "Rate: " . htmlspecialchars($item['rate']) . ", ";
+                                                                    echo "Weight: " . htmlspecialchars($item['weight']) . "<br>";
+                                                                }
+                                                            } else {
+                                                                echo "No items found";
                                                             }
-                                                        } else {
-                                                            echo "No items found";
-                                                        }
-                                                        ?>
-                                                    </td>
-
-                                                    <td><?= $bookigData['DCC'] ?></td>
-                                                    <td><?= $bookigData['TRANSPORT_TYPE'] ?></td>
-                                                    <td><?= $bookigData['LOADING'] ?></td>
-                                                    <td><?= $bookigData['UNLOADING'] ?></td>
-                                                    <td><?= $bookigData['FRIGHT'] ?></td>
-                                                    <td><?= $bookigData['LR_AMOUNT'] ?></td>
-                                                    <td><?= $bookigData['TOTAL_AMOUNT'] ?></td>
-                                                </tr>
-                                            <?php } ?>
+                                                            ?>
+                                                        </td>
+                                                        <td><?= $booking['DCC'] ?></td>
+                                                        <td><?= $booking['TRANSPORT_TYPE'] ?></td>
+                                                        <td><?= $booking['LOADING'] ?></td>
+                                                        <td><?= $booking['UNLOADING'] ?></td>
+                                                        <td><?= $booking['FRIGHT'] ?></td>
+                                                        <td><?= $booking['LR_AMOUNT'] ?></td>
+                                                        <td><?= $booking['TOTAL_AMOUNT'] ?></td>
+                                                    </tr>
+                                            <?php
+                                                }
+                                            }
+                                            ?>
+                                            <tr>
+                                                <td colspan="20" style="text-align: right;"><strong>Grand Total:</strong></td>
+                                                <td><strong><?= number_format($totalSum, 2) ?></strong></td>
+                                            </tr>
                                         </tbody>
+
                                     </table>
                                 </div>
                                 <h2 class="text-center mb-5">DRIVER DETAILS</h2>
