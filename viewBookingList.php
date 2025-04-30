@@ -110,6 +110,7 @@
                                                                     <th style="color:#0c1211">Payment&nbsp;Method</th>
                                                                     <th style="color:#0c1211">Loading</th>
                                                                     <th style="color:#0c1211">Unloading</th>
+                                                                    <th style="color:#0c1211">Transport Type</th>
                                                                     <th style="color:#0c1211; text-align: center;">Items</th>
                                                                     <th style="color:#0c1211; text-align: center;">Fright</th>
                                                                     <th style="color:#0c1211; text-align: center;">LR Amount</th>
@@ -173,6 +174,7 @@
                                                                         <td style="color:#0c1211"><?php echo $row['PAYMENT_METHOD']; ?></td>
                                                                         <td style="color:#0c1211"><?php echo $row['LOADING']; ?></td>
                                                                         <td style="color:#0c1211"><?php echo $row['UNLOADING']; ?></td>
+                                                                        <td style="color:#0c1211"><?php echo $row['TRANSPORT_TYPE']; ?></td>
                                                                         <td style="color:#0c1211">
                                                                             <?php
                                                                             $items = json_decode($row['ITEMS'], true);
@@ -235,7 +237,7 @@
                                                 </div>
                                             </div>
 
-                                           
+
                                 </div>
                             </div>
                         </div>
@@ -276,7 +278,7 @@
                                 <input type="text" class="form-control" id="bookingDate" name="bookingDate" readonly />
                             </div>
                         </div>
-                       
+
                         <div class="col-sm-6">
                             <div class="form-group">
                                 <label for="customer">From Name</label>
@@ -328,7 +330,7 @@
                                 <input type="text" class="form-control" id="dcc" name="dcc" readonly />
                             </div>
                         </div>
-                      
+
                         <div class="col-sm-6">
                             <div class="form-group">
                                 <label for="total-amount">Customer Invoice Number</label>
@@ -344,15 +346,15 @@
                                     name="customerInvoiceValue" readonly />
                             </div>
                         </div>
-                       
-                        
+
+
                         <div class="col-sm-12">
                             <div class="form-group">
                                 <label for="quantity-details">Items</label>
                                 <textarea class="form-control" id="items" name="items" rows="3" readonly></textarea>
                             </div>
                         </div>
-                       
+
                         <div class="col-sm-6">
                             <div class="form-group">
                                 <label for="total-amount">Unloading Amount</label>
@@ -388,7 +390,7 @@
                                     name="fright" readonly />
                             </div>
                         </div>
-                      
+
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -397,10 +399,10 @@
                 </div>
             </div>
         </div>
-    </div>  
+    </div>
     </div>
     </section>
- 
+
     </div>
     </section>
     </div>
@@ -462,26 +464,41 @@
         // AJAX request
         $.ajax({
             url: 'bookingDataOperations.php',
-            type: 'post',
+            type: 'POST',
             data: {
                 forBookingList: 1,
                 bookingId: bookingId
             },
             success: function(response) {
                 console.log(response);
+
                 let res = JSON.parse(response);
 
-                // Now fill the modal fields
+                // Set form fields
                 $('#lrNumber').val(res['LR_NUMBER']);
                 $('#bookingDate').val(res['BOOKING_DATETIME']);
-                $('#mobile').val(res['MANUAL_LR_NUMBER']);
-                $('#delivery-to').val(res['CUSTOMER_INVOICE_NUMBER']);
-                $('#delivery-mobile').val(res['CUSTOMER_INVOICE_VALUE']);
+                $('#mobile').val(res['FROM_MOBILE']);
+                $('#delivery-to').val(res['TO_NAME']);
+                $('#delivery-mobile').val(res['TO_MOBILE']);
                 $('#fromName').val(res['FROM_NAME']);
                 $('#fromMobile').val(res['FROM_MOBILE']);
                 $('#toName').val(res['TO_NAME']);
                 $('#toMobile').val(res['TO_MOBILE']);
-                $("#items").val(res['ITEMS']);
+                let rawItems = res['ITEMS'];
+                let cleanedItems = rawItems.replace(/\\+/g, '').replace(/^"|"$/g, '');
+                let parsedItems;
+                try {
+                    parsedItems = JSON.parse(cleanedItems);
+                } catch (e) {
+                    parsedItems = [];
+                }
+                let finalString = parsedItems
+                    .filter(item => Object.keys(item).length > 0)
+                    .map(item => {
+                        return Object.entries(item).map(([key, value]) => `${key}:${value}`).join(',');
+                    }).join('\n'); 
+                $('#items').val(finalString);
+
                 $('#transportType').val(res['TRANSPORT_TYPE']);
                 $('#fright').val(res['FRIGHT']);
                 $('#paymentType').val(res['PAYMENT_TYPE']);
@@ -491,39 +508,20 @@
                 $('#loading').val(res['LOADING']);
                 $('#unloading').val(res['UNLOADING']);
                 $('#dcc').val(res['DCC']);
-                $('#customerInvoiceValue').val(res['CUSTOMER_INVOICE_NUMBER']);
-                $('#customerInvoiceNumber').val(res['CUSTOMER_INVOICE_VALUE']);
+                $('#customerInvoiceNumber').val(res['CUSTOMER_INVOICE_NUMBER']);
+                $('#customerInvoiceValue').val(res['CUSTOMER_INVOICE_VALUE']);
 
-                // Display Modal
+                // Show modal
                 $('#details-model').modal('show');
+            },
+            error: function(xhr, status, error) {
+                console.error("AJAX Error:", error);
             }
         });
     });
 
 
-    function getQuantityDetails(itemsJson) {
-        let details = '';
 
-        try {
-            let items = JSON.parse(itemsJson);
-            if (Array.isArray(items)) {
-                items.forEach(function(item) {
-                    details += 'Particular: ' + (item.particular || '') + ', ';
-                    details += 'UOM: ' + (item.uom || '') + ', ';
-                    details += 'Qty: ' + (item.qty || '') + ', ';
-                    details += 'Rate: ' + (item.rate || '') + ', ';
-                    details += 'Weight: ' + (item.weight || '') + '\n';
-                });
-            } else {
-                details = 'No items found.';
-            }
-        } catch (e) {
-            console.error('Invalid JSON in ITEMS:', e);
-            details = 'Invalid item details.';
-        }
-
-        return details;
-    }
 
 
     // var updateDetails = function(id) {

@@ -54,7 +54,6 @@ $dateTime = date('Y-m-d H:i', strtotime($date_1));
 //     $finalLRNumber = 'ZH-' . $datePart . '-' . $lrSerial;
 //     return $finalLRNumber;
 // }
-
 function getLrNumber($conn)
 {
     // Get the latest LR number
@@ -277,52 +276,124 @@ if (isset($_POST['forBookingList'])) {
     }
     print_r(json_encode($bookingDetails));
 }
+//getDriverDetails
+if (isset($_POST['getDriverDetails'])){
+    $mobileNumber = $_POST['mobileNumber'];
+    $stmt = $conn->prepare("SELECT DRIVER_NAME, VEHICLE_NUMBER, VEHICLE_NAME,LICENSE FROM driver_details WHERE MOBILE = ?");
+    $stmt->bind_param("s", $mobileNumber);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    if ($row = $result->fetch_assoc()) {
+        echo json_encode([
+            'success' => true,
+            'driverName' => $row['DRIVER_NAME'],
+            'vehicleNumber' => $row['VEHICLE_NUMBER'],
+            'vehicleName' => $row['VEHICLE_NAME'],
+            'vehicleLicense' => $row['LICENSE']
+        ]);
+    } else {
+        echo json_encode(['success' => false]);
+    }
+
+}
 
 if (isset($_POST['moveToShipOutward'])) {
-    $bookingId = $_POST['bookingId'];
-    $driverDetails = $_POST['driverDetails'];
-    $shipmentVia = $_POST['shipmentVia'];
-    $shipmentVia = $_POST['shipmentVia'];
-    $bookingStatus = $shipmentVia == "Via_Coimbatore" ? 1 : 2;
-    $showInShipOutward = $shipmentVia == "Via_Coimbatore" ? 1 : 0;
-
-    $driverDetailsJson = json_decode($driverDetails, true);
+    $bookingId      = $_POST['bookingId'];
+    $shipmentVia    = $_POST['shipmentVia'];
+    $hubSelect = ($shipmentVia === 'Hub') ? $_POST['hubSelect'] : $shipmentVia;
+    $driverName     = $_POST['driverName'];
+    $mobileNumber   = $_POST['mobileNumber'];
+    $vehicleNumber  = $_POST['vehicleNumber'];
+    $vehicleName    = $_POST['vehicleName'];
 
     try {
-        echo $updateQuery = "UPDATE booking_details SET 
-                                BOOKING_STAUTS = $bookingStatus, 
-                                LAST_UPDATE_DATE = '$date',
-                                SHIPMENT_VIA = '$shipmentVia',
-                                SHOW_IN_VIEW_SHIPOUTWARD = $showInShipOutward
-                             WHERE BOOKING_ID = $bookingId";
-        if (isset($conn)) {
-            mysqli_query($conn, $updateQuery);
-
-            echo $updateDriverDetailsQry = "
-                        INSERT INTO shipment_details 
-                            (BOOKING_ID, SHIPMENT_1_DATE, SHIPMENT_1_DATE_TIME, DRIVER_1_DETAILS)
-                        VALUES
-                            ($bookingId, '$date', '$dateTime', '$driverDetails')
-                        ";
-
-            mysqli_query($conn, $updateDriverDetailsQry);
-            print_r("Success");
-
-            $driverName = $driverDetailsJson['DRIVER_NAME'];
-            $driverMobile = $driverDetailsJson['DRIVER_MOBILE'];
-            $advanceAmount = $driverDetailsJson['ADVANCE_AMOUNT'];
-            $updateDriverDetailsQuery = "INSERT INTO driver_details (DRIVER_NAME, MOBILE)
-                                            SELECT * FROM (SELECT '$driverName', '$driverMobile',$advanceAmount) AS tmp
-                                            WHERE NOT EXISTS (
-                                                SELECT DRIVER_NAME, MOBILE FROM driver_details WHERE DRIVER_NAME = '$driverName' AND MOBILE = '$driverMobile' AND ADVANCE_AMOUNT = '$advanceAmount'
-                                            ) LIMIT 1
-                                        ";
-            mysqli_query($conn, $updateDriverDetailsQuery);
+        $bookingData = [
+            "BOOKING_STATUS" => 10
+        ];
+        $dbOperator->updateData("booking", $bookingData, ['BOOKING_ID' => $bookingId]);
+        $GDMNumber = getGDMNo($conn);
+        if (!$GDMNumber) {
+            throw new Exception("Failed to generate GDM Number.");
         }
+        $gdmData = [
+            "BOOKING_ID" => $bookingId,
+            "GDM_NUMBER" => $GDMNumber
+        ];
+        $gdmIdResponse = $dbOperator->insertData('gdm_number', $gdmData);
+        if (!$gdmIdResponse) {
+            throw new Exception("Failed to insert into gdm_number table.");
+        }
+        
+        // Extract the numeric ID
+        preg_match('/\d+$/', $gdmIdResponse, $matches);
+        $gdmId = $matches[0] ?? null;
+        
+        if (!$gdmId) {
+            throw new Exception("Invalid GDM ID returned.");
+        }
+        
+         $mappingData = [
+            "GDM_ID"         => $gdmId,
+            "DRIVER_NAME"    => $driverName,
+            "DRIVER_NUMBER"  => $mobileNumber,
+            "VEHICLE_NUMBER" => $vehicleNumber,
+            "VEHICLE_NAME"   => $vehicleName,
+            "SHIPMENT_AREA"  => $hubSelect
+        ];
+
+        if (!$dbOperator->insertData('gdm_mapping', $mappingData)) {
+            throw new Exception("Failed to insert into gdm_mapping table.");
+        }
+        echo "Success: GDM ID is $gdmId";
     } catch (Exception $e) {
-        print_r("Error: " . $e);
+        echo "Error: " . $e->getMessage();
     }
 }
+
+function getGDMNo($conn)
+{
+    $cdate = date('Y-m-d');
+    $datePart = date('Ymd');
+    mysqli_begin_transaction($conn);
+
+    try {
+        $checkDateQry = "SELECT GDM_NO FROM ref_no_gdm WHERE DATE = '$cdate' LIMIT 1";
+        $checkResult = mysqli_query($conn, $checkDateQry);
+
+        if (!$checkResult) {
+            throw new Exception("Failed to check GDM number: " . mysqli_error($conn));
+        }
+
+        if (mysqli_num_rows($checkResult) > 0) {
+            $row = mysqli_fetch_assoc($checkResult);
+            $currentLR = (int)$row['GDM_NO'];
+            $newLR = str_pad($currentLR + 1, 3, '0', STR_PAD_LEFT);
+
+            $updateLRNumberQry = "UPDATE ref_no_gdm SET GDM_NO = '$newLR' WHERE DATE = '$cdate'";
+            if (!mysqli_query($conn, $updateLRNumberQry)) {
+                throw new Exception("Failed to update GDM number: " . mysqli_error($conn));
+            }
+
+            $lrSerial = $newLR;
+        } else {
+            $lrSerial = '001';
+            $insertLRQry = "INSERT INTO ref_no_gdm (DATE, GDM_NO) VALUES ('$cdate', '$lrSerial')";
+            if (!mysqli_query($conn, $insertLRQry)) {
+                throw new Exception("Failed to insert GDM number: " . mysqli_error($conn));
+            }
+        }
+
+        $finalLRNumber = 'GDM-' . $datePart . '-' . $lrSerial;
+        mysqli_commit($conn);
+        return $finalLRNumber;
+    } catch (Exception $e) {
+        mysqli_rollback($conn);
+        echo "Error in GDM generation: " . $e->getMessage();
+        return false;
+    }
+}
+
 if (isset($_POST['revertShipOutward'])) {
     $bookingId = $_POST['bookingId'];
 

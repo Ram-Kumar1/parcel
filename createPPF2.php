@@ -67,7 +67,7 @@ if (isset($_GET['lr_Id'])) {
         $fromBranchPlace = $row['FROM_BRANCH_ID'];
         $getfromBranchPlace = "SELECT ROUTE_NAME FROM branches WHERE BRANCH_ID = ?";
         $stmt = $conn->prepare($getfromBranchPlace);
-        $stmt->bind_param("s", $fromBranchPlace);
+        $stmt->bind_param("i", $fromBranchPlace);
         $stmt->execute();
         $result = $stmt->get_result();
     
@@ -75,9 +75,19 @@ if (isset($_GET['lr_Id'])) {
             $fromPlaceName = $rows['ROUTE_NAME'];
         }
 
-        $toPlace = $row['TO_BRANCH_ID'];
+        $toBranchId = $row['TO_BRANCH_ID'];
+        $fromBranchPlace = $row['FROM_BRANCH_ID'];
+        $getfromBranchPlace = "SELECT ROUTE_NAME FROM branches WHERE BRANCH_ID = ?";
+        $stmt = $conn->prepare($getfromBranchPlace);
+        $stmt->bind_param("i", $toBranchId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+    
+        while ($rows = $result->fetch_assoc()) {
+            $toPlaceName = $rows['ROUTE_NAME'];
+        }
 
-         $fromPlace = $row['FROM_NAME'];
+        $fromPlace = $row['FROM_NAME'];
         $fromMobile = $row['FROM_MOBILE'];
         $toPlace = $row['TO_NAME'];
         $toMobile = $row['TO_MOBILE'];
@@ -303,7 +313,7 @@ if (isset($_GET['lr_Id'])) {
                                                                             <td style="text-align: center;">
                                                                                 <h3>
                                                                                     <b contenteditable="true" id="fromBranchPlace">
-                                                                                        <?php echo $fromPlaceName ?? 'null' . " / " . $fromPlace ?? 'null' ?>
+                                                                                        <?php echo $fromPlaceName . " / " . $fromPlace  ?>
                                                                                     </b>
                                                                                 </h3>
                                                                             </td>
@@ -397,7 +407,7 @@ if (isset($_GET['lr_Id'])) {
                                                                             <td style="text-align: center; vertical-align: middle;">
                                                                                 <span>Delivery Place: </span><br>
                                                                                 <h2>
-                                                                                    <b contenteditable="true" id="toPlace"><?php echo $toPlace; ?></b>
+                                                                                    <b contenteditable="true" id="toPlace"><?php echo $toPlaceName; ?></b>
                                                                                 </h2>
                                                                                 <br>
                                                                                 <span>Delivery Number: </span><br>
