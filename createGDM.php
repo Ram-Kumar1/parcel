@@ -1,96 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <link rel="stylesheet" href="./css/table-filter.css">
-
-<style>
-    /* FOR TABLE FIXED HEADER */
-    .tableFixHead {
-        overflow-y: auto;
-        max-height: 400px;
-    }
-
-    .tableFixHead table {
-        border-collapse: collapse;
-        width: 100%;
-    }
-
-    .tableFixHead th,
-    .tableFixHead td {
-        padding: 8px 16px;
-    }
-
-    .tableFixHead th {
-        position: sticky;
-        top: 0;
-    }
-
-    /* ENDS HERE */
-    .m-1 {
-        margin-top: 1em;
-    }
-
-    .m-1-em {
-        margin: 1em;
-    }
-
-    .filterable {
-        margin-top: 15px;
-    }
-
-    .filterable .panel-heading .pull-right {
-        margin-top: -20px;
-    }
-
-    .filterable .filters input[disabled] {
-        background-color: transparent;
-        border: none;
-        cursor: auto;
-        box-shadow: none;
-        padding: 0;
-        height: auto;
-    }
-
-    .filterable .filters input[disabled]::-webkit-input-placeholder {
-        color: #333;
-    }
-
-    .filterable .filters input[disabled]::-moz-placeholder {
-        color: #333;
-    }
-
-    .filterable .filters input[disabled]:-ms-input-placeholder {
-        color: #333;
-    }
-
-    .red {
-        color: red !important;
-    }
-
-    .max-30 {
-        max-height: 30em;
-    }
-
-    .gst-0 {
-        background: #95e395 !important;
-    }
-
-    .gst-1 {
-        background: white !important;
-    }
-
-    .move-success {
-        background: #b7fbb7 !important;
-    }
-
-    .w3-select {
-        background: white !important;
-    }
-
-    .mandatory-field {
-        color: red;
-    }
-</style>
-
 <body>
     <!--*******************
         Preloader start
@@ -506,8 +416,6 @@
                 </div>
             </div>
         </div>
-    </div>
-
     </div>
 
     <!--**********************************

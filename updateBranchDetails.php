@@ -91,12 +91,10 @@ if (isset($_GET['branchOfficeId'])) {
         $state = htmlspecialchars($row['STATE']);
         $userNameFromQry = htmlspecialchars($row['USER_NAME']);
         $passwordFromQry = htmlspecialchars($row['PASSWORD']);
-
         $paidComissionFromQry = floatval($row['PAID_COMMISION']);
         $totalComissionFromQry = floatval($row['TO_PAY_COMMISION']);
         $isAgentFromQry = intval($row['IS_AGENT']);
         $expenseAmountFromQry = floatval($row['TOTAL_EXPENSE_AMOUNT']);
-
         $expenseFromQry = $row['EXPENSES'];
         $expenseDescriptions = json_decode($expenseFromQry, true) ?: [];
     } else {
@@ -131,7 +129,6 @@ if (isset($_GET['branchOfficeId'])) {
     <!-- Main wrapper -->
     <div id="main-wrapper">
         <?php include 'header.php'; ?>
-
         <!-- Content body -->
         <div class="content-body">
             <div class="container-fluid">
@@ -173,38 +170,38 @@ if (isset($_GET['branchOfficeId'])) {
                                                     <div class="form-group">
                                                         <label for="state">State<span class="mandatory-field  text-danger">*</span></label>
                                                         <select class="form-control" id="state" name="state" required>
-                                                            <?php 
+                                                            <?php
                                                             $getState = "SELECT STATE_NAME,STATE_ID FROM state WHERE STATE_ID = ?";
                                                             $stmt = $conn->prepare($getState);
                                                             $stmt->bind_param("i", $state);
                                                             $stmt->execute();
                                                             $result = $stmt->get_result();
-                                                        
+
                                                             while ($row = $result->fetch_assoc()) {
 
                                                             ?>
-                                                            <option value="<?php echo $row['STATE_ID']; ?>"><?php echo $row['STATE_NAME']; ?></option>
-                                                           <?php } ?>
+                                                                <option value="<?php echo $row['STATE_ID']; ?>"><?php echo $row['STATE_NAME']; ?></option>
+                                                            <?php } ?>
                                                         </select>
                                                     </div>
                                                 </div>
-                                                
+
                                                 <div class="col-12 col-sm-6">
                                                     <div class="form-group">
                                                         <label for="city">City<span class="mandatory-field  text-danger">*</span></label>
                                                         <select class="form-control" id="city" name="city" required>
-                                                        <?php 
+                                                            <?php
                                                             $getCity = "SELECT CITY_NAME,CITY_ID FROM cities WHERE CITY_ID = ?";
                                                             $stmt = $conn->prepare($getCity);
                                                             $stmt->bind_param("i", $placeFromQry);
                                                             $stmt->execute();
                                                             $result = $stmt->get_result();
-                                                        
+
                                                             while ($row = $result->fetch_assoc()) {
 
                                                             ?>
-                                                            <option value="<?php echo $row['CITY_ID']; ?>"><?php echo $row['CITY_NAME']; ?></option>
-                                                           <?php } ?>
+                                                                <option value="<?php echo $row['CITY_ID']; ?>"><?php echo $row['CITY_NAME']; ?></option>
+                                                            <?php } ?>
                                                         </select>
                                                     </div>
                                                 </div>
@@ -305,8 +302,10 @@ if (isset($_GET['branchOfficeId'])) {
                 </div>
             </div>
         </div>
+    </div>
 
-        <?php include 'footer.php'; ?>
+
+    <?php include 'footer.php'; ?>
     </div>
 
     <script>

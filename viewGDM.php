@@ -2,25 +2,8 @@
 <html lang="en">
 
 <head>
-
     <!-- Your head content here -->
     <link rel="stylesheet" href="./css/table-filter.css">
-    <style>
-        /* Your styles here */
-        .max-30 {
-            max-height: 30vh;
-            overflow-y: auto;
-        }
-
-        .a-edit-icon {
-            cursor: pointer;
-        }
-
-        .font-x-large {
-            font-size: 1.5em;
-        }
-    </style>
-
 </head>
 
 <body>
@@ -177,7 +160,6 @@
             // Reload the page to restore JS state
             window.location.reload();
         };
-
 
         $(document).ready(function() {
             $("#data-table").ddTableFilter();

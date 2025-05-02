@@ -49,40 +49,6 @@ $city       = $branchData['CITY_NAME'] ?? '';
 <!DOCTYPE html>
 <html lang="en">
 
-<style>
-    hr {
-        margin-top: 1rem;
-        margin-bottom: 1rem;
-        border: 0;
-        border-top: 1px solid rgba(0, 0, 0, 0.1);
-    }
-
-    .m-t-3 {
-        margin-top: 0.5em;
-    }
-
-    .w-100 {
-        width: 100%
-    }
-
-    #from_customer,
-    #to_customer {
-        accent-color: black;
-        /* For modern browsers */
-        width: 18px;
-        height: 18px;
-        border: 6px solid black;
-        /* fallback for border */
-        appearance: none;
-        /* remove default checkbox style */
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        border-radius: 3px;
-        cursor: pointer;
-        position: relative;
-    }
-</style>
-
 <script>
     let customerNameMobileMap = {};
     let tocustomerNameMobileMap = {};
@@ -127,7 +93,6 @@ $city       = $branchData['CITY_NAME'] ?? '';
 
     <!--********************************** Main wrapper start ***********************************-->
     <div id="main-wrapper">
-
         <?php include 'header.php'; ?>
 
         <!--********************************** Content body start ***********************************-->
@@ -446,8 +411,9 @@ $city       = $branchData['CITY_NAME'] ?? '';
                 </div>
             </div>
         </div>
+    </div>
 
-        <?php include 'footer.php'; ?>
+    <?php include 'footer.php'; ?>
 
     </div><!-- end main-wrapper -->
 

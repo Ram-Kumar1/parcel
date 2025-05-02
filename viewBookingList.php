@@ -78,7 +78,6 @@
                                     if (isset($conn) && $result = mysqli_query($conn, $sql)) {
                                         if (mysqli_num_rows($result) > 0) {
 
-
                                     ?>
                                             <div class="panel-body">
                                                 <div class="">
@@ -225,7 +224,6 @@
                                                     </div>
                                                 </div>
                                             </div>
-
 
                                 </div>
                             </div>
@@ -389,18 +387,8 @@
             </div>
         </div>
     </div>
-    </div>
-    </section>
 
-    </div>
-    </section>
-    </div>
-    </div>
-    </div>
-    </div>
-    </div>
 
-    </div> <!-- #/ container -->
     <!--**********************************
             Content body end
         ***********************************-->

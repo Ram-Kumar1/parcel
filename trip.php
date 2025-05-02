@@ -5,9 +5,6 @@
 
     <!-- Your head content here -->
     <link rel="stylesheet" href="./css/table-filter.css">
-    <style>
-
-    </style>
 
 </head>
 
@@ -37,7 +34,6 @@
             Content body start
         ***********************************-->
         <div class="content-body">
-
             <div class="container-fluid">
                 <div class="row justify-content-center">
                     <div class="col-lg-12">
@@ -161,15 +157,12 @@
                 </div>
             </div>
         </div>
-
-
-        <!--**********************************
+    </div>
+    <!--**********************************
             Content body end
         ***********************************-->
 
-        <?php include 'footer.php'; ?>
-
-    </div>
+    <?php include 'footer.php'; ?>
 
     <!-- Select2 Fileter -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -179,96 +172,96 @@
     <!-- Prevent Number Scrolling -->
     <script src="./js/chits/numberInputPreventScroll.js"></script>
     <script type="text/javascript">
-    $(document).ready(function () {
-        // Show/hide dieselLitter field
-        $('#dieselAmount').on('input', function () {
-            const value = $(this).val().trim();
-            if (value !== '') {
-                $('#dieselLitter').closest('.col-12').removeClass('d-none');
-            } else {
-                $('#dieselLitter').closest('.col-12').addClass('d-none');
-            }
-        });
-
-        // Update totalAmount
-        function updateTotalAmount() {
-            let diesel = parseFloat($('#dieselAmount').val()) || 0;
-            let advance = parseFloat($('#advanceAmount').val()) || 0;
-            let total = diesel + advance;
-            $('#totalAmount').val(total.toFixed(2));
-        }
-
-        $('#dieselAmount, #advanceAmount').on('input', updateTotalAmount);
-
-        // Check/Uncheck all checkboxes
-        const checkAllBtn = document.querySelector("#check-all");
-        checkAllBtn.addEventListener("click", function () {
-            const checkboxes = document.querySelectorAll("input[type='checkbox'][data-booking-id]");
-            const allChecked = [...checkboxes].every(cb => cb.checked);
-            checkboxes.forEach(cb => cb.checked = !allChecked);
-            this.innerHTML = (!allChecked ? "Uncheck All" : "Check All") + ' <i class="fa fa-check-square-o" aria-hidden="true"></i>';
-        });
-
-        // Table filter and select2
-        $("#data-table").ddTableFilter();
-        $('select').addClass('w3-select');
-        $('select').select2();
-    });
-
-    function createTrip() {
-        let openingKm = $('#openingKm').val();
-        if (!openingKm) return alert("❌ Starting KM is mandatory!");
-
-        let closingKm = $('#closingKm').val();
-        if (!closingKm) return alert("❌ Closing KM is mandatory!");
-
-        let dieselAmount = $('#dieselAmount').val();
-        if (!dieselAmount) return alert("❌ Diesel Amount is mandatory!");
-
-        let dieselLitter = $('#dieselLitter').val() || 0;
-
-        let advanceAmount = $('#advanceAmount').val();
-        if (!advanceAmount) return alert("❌ Advance Amount is mandatory!");
-
-        let totalAmount = $('#totalAmount').val() || 0;
-
-        let selectedIds = [];
-        $("input[type='checkbox']:checked").each(function () {
-            selectedIds.push($(this).data("booking-id"));
-        });
-
-        if (selectedIds.length === 0) {
-            alert("❌ Please select at least one GDM entry.");
-            return;
-        }
-
-        $.ajax({
-            url: 'bookingDataOperations.php',
-            type: 'POST',
-            data: {
-                createTrip: 1,
-                gdmIds: selectedIds,
-                openingKm: openingKm,
-                closingKm: closingKm,
-                dieselAmount: dieselAmount,
-                dieselLitter: dieselLitter,
-                advanceAmount: advanceAmount,
-                totalAmount: totalAmount
-            },
-            success: function (response) {
-                console.log("Response from server:", response);
-                response = response.toString().trim();
-
-                if (response.startsWith("Insert Successful")) {
-                    alert("✔️ Trip created successfully!");
-                    window.location.reload();
+        $(document).ready(function() {
+            // Show/hide dieselLitter field
+            $('#dieselAmount').on('input', function() {
+                const value = $(this).val().trim();
+                if (value !== '') {
+                    $('#dieselLitter').closest('.col-12').removeClass('d-none');
                 } else {
-                    alert("🚨 Some error occurred. Please try again.");
+                    $('#dieselLitter').closest('.col-12').addClass('d-none');
                 }
+            });
+
+            // Update totalAmount
+            function updateTotalAmount() {
+                let diesel = parseFloat($('#dieselAmount').val()) || 0;
+                let advance = parseFloat($('#advanceAmount').val()) || 0;
+                let total = diesel + advance;
+                $('#totalAmount').val(total.toFixed(2));
             }
+
+            $('#dieselAmount, #advanceAmount').on('input', updateTotalAmount);
+
+            // Check/Uncheck all checkboxes
+            const checkAllBtn = document.querySelector("#check-all");
+            checkAllBtn.addEventListener("click", function() {
+                const checkboxes = document.querySelectorAll("input[type='checkbox'][data-booking-id]");
+                const allChecked = [...checkboxes].every(cb => cb.checked);
+                checkboxes.forEach(cb => cb.checked = !allChecked);
+                this.innerHTML = (!allChecked ? "Uncheck All" : "Check All") + ' <i class="fa fa-check-square-o" aria-hidden="true"></i>';
+            });
+
+            // Table filter and select2
+            $("#data-table").ddTableFilter();
+            $('select').addClass('w3-select');
+            $('select').select2();
         });
-    }
-</script>
+
+        function createTrip() {
+            let openingKm = $('#openingKm').val();
+            if (!openingKm) return alert("❌ Starting KM is mandatory!");
+
+            let closingKm = $('#closingKm').val();
+            if (!closingKm) return alert("❌ Closing KM is mandatory!");
+
+            let dieselAmount = $('#dieselAmount').val();
+            if (!dieselAmount) return alert("❌ Diesel Amount is mandatory!");
+
+            let dieselLitter = $('#dieselLitter').val() || 0;
+
+            let advanceAmount = $('#advanceAmount').val();
+            if (!advanceAmount) return alert("❌ Advance Amount is mandatory!");
+
+            let totalAmount = $('#totalAmount').val() || 0;
+
+            let selectedIds = [];
+            $("input[type='checkbox']:checked").each(function() {
+                selectedIds.push($(this).data("booking-id"));
+            });
+
+            if (selectedIds.length === 0) {
+                alert("❌ Please select at least one GDM entry.");
+                return;
+            }
+
+            $.ajax({
+                url: 'bookingDataOperations.php',
+                type: 'POST',
+                data: {
+                    createTrip: 1,
+                    gdmIds: selectedIds,
+                    openingKm: openingKm,
+                    closingKm: closingKm,
+                    dieselAmount: dieselAmount,
+                    dieselLitter: dieselLitter,
+                    advanceAmount: advanceAmount,
+                    totalAmount: totalAmount
+                },
+                success: function(response) {
+                    console.log("Response from server:", response);
+                    response = response.toString().trim();
+
+                    if (response.startsWith("Insert Successful")) {
+                        alert("✔️ Trip created successfully!");
+                        window.location.reload();
+                    } else {
+                        alert("🚨 Some error occurred. Please try again.");
+                    }
+                }
+            });
+        }
+    </script>
 
 </body>
 

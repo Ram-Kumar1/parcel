@@ -1,39 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-<style>
-    hr {
-        margin-top: 1rem;
-        margin-bottom: 1rem;
-        border: 0;
-        border-top: 1px solid rgba(0, 0, 0, 0.1);
-    }
-
-    .m-t-3 {
-        margin-top: 0.5em;
-    }
-
-    .w-100 {
-        width: 100%
-    }
-
-    #from_customer,
-    #to_customer {
-        accent-color: black;
-        /* For modern browsers */
-        width: 18px;
-        height: 18px;
-        border: 6px solid black;
-        /* fallback for border */
-        appearance: none;
-        /* remove default checkbox style */
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        border-radius: 3px;
-        cursor: pointer;
-        position: relative;
-    }
-</style>
-
 <script>
     let customerNameMobileMap = {};
     let tocustomerNameMobileMap = {};
@@ -85,12 +51,9 @@
         Main wrapper start
     ***********************************-->
     <div id="main-wrapper">
-
         <?php include 'header.php';
-
         $userName = $_SESSION['userName'];
         $branchName = $_SESSION['admin'];
-
         $getFromBranchId = "SELECT BRANCH_ID FROM branches WHERE ROUTE_NAME = ?";
         $stmt = $conn->prepare($getFromBranchId);
         $stmt->bind_param("s", $branchName);
