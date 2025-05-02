@@ -67,7 +67,7 @@ if (isset($_GET['gdm'])) {
                                 <div class="table-responsive filterable mb-5">
                                     <table class="table table-striped tableFixHead" id="booking-table">
                                         <thead>
-                                            <tr>
+                                            <tr class="text-center">
                                                 <th>Date</th>
                                                 <th>LR Number</th>
                                                 <th>Manual LR Number</th>
@@ -98,7 +98,7 @@ if (isset($_GET['gdm'])) {
                                                 foreach ($bookingData as $booking) {
                                                     $totalSum += (float)$booking['TOTAL_AMOUNT'];
                                             ?>
-                                                    <tr>
+                                                    <tr class="text-center">
                                                         <td><?= $booking['BOOKING_DATETIME'] ?></td>
                                                         <td><?= $booking['LR_NUMBER'] ?></td>
                                                         <td><?= $booking['MANUAL_LR_NUMBER'] ?></td>
@@ -155,7 +155,7 @@ if (isset($_GET['gdm'])) {
                                 <div class="table-responsive filterable mt-5">
                                     <table class="table table-striped tableFixHead" id="driver-table">
                                         <thead>
-                                            <tr>
+                                            <tr class="text-center">
                                                 <th>Driver Name</th>
                                                 <th>Mobile Number</th>
                                                 <th>Vehicle Number</th>
@@ -164,7 +164,7 @@ if (isset($_GET['gdm'])) {
                                         </thead>
                                         <tbody>
                                             <?php if (!empty($driverData)) { ?>
-                                                <tr>
+                                                <tr class="text-center">
                                                     <td><?= $driverData['DRIVER_NAME'] ?></td>
                                                     <td><?= $driverData['DRIVER_NUMBER'] ?></td>
                                                     <td><?= $driverData['VEHICLE_NUMBER'] ?></td>
@@ -189,10 +189,7 @@ if (isset($_GET['gdm'])) {
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="./js/ddtf.js"></script>
     <script>
-        $(document).ready(function() {
-            $("#booking-table, #driver-table").ddTableFilter();
-            $('select').select2();
-        });
+     
     </script>
 </body>
 

@@ -316,7 +316,6 @@ if (isset($_GET['getToMobileNameMapping'])) {
     exit;
 }
 
-
 // updateBranchDetails
 // if (isset($_POST['updateBranchDetails'])) {
 //     $branchOfficeId = mysqli_real_escape_string($conn, $_POST['branchOfficeId']);
@@ -464,7 +463,7 @@ if (isset($_POST['addDriver'])) {
             "MOBILE" => $driverMobile,
             "LICENSE" => $driverLicense,
             "VEHICLE_NUMBER" => $vehicleno,
-            "VEHICLE_DESCRIPTION" => $description
+            "VEHICLE_NAME" => $description
 
 
         );
@@ -494,7 +493,7 @@ if (isset($_POST['editdriver'])) {
             "MOBILE" => $driverMobile,
             "LICENSE" => $driverLicense,
             "VEHICLE_NUMBER" => $vehicleno,
-            "VEHICLE_DESCRIPTION" => $description,
+            "VEHICLE_NAME" => $description,
 
         );
         echo $dbOperator->updateData("driver_details", $data, ["DRIVER_ID" => $driverid]);
@@ -509,10 +508,7 @@ if (isset($_POST['deleteDriver'])) {
     echo $dbOperator->deleteRecord("driver_details", $conditions);
 }
 
-
-
 //add customer
-
 if (isset($_POST['addCustomer'])) {
     $name = htmlspecialchars(trim($_POST['name']));
     $mobile = htmlspecialchars(trim($_POST['mobile']));
@@ -575,8 +571,6 @@ if (isset($_POST['addItem'])) {
         echo $dbOperator->insertData("items", $data);
     }
 }
-
-
 // edit Item
 if (isset($_POST['editItem'])) {
     $ItemId = $_POST['ItemId'];
@@ -602,8 +596,6 @@ if (isset($_POST['editItem'])) {
 
     echo $dbOperator->updateData("items", $data, $conditions);
 }
-
-
 
 //delete Item
 if (isset($_POST['deleteItem'])) {
@@ -674,7 +666,6 @@ if (isset($_POST['Calcel'])) {
 
 
 
-
 if (isset($_POST['updateExistingMember'])) {
     $memberId = $_POST['updateExistingMember'];
     $memberName = $_POST['memberName'];
@@ -691,7 +682,6 @@ if (isset($_POST['updateExistingMember'])) {
     );
     echo $dbOperator->updateData("members", $data, $conditions);
 }
-
 
 if (isset($_POST['updateExistingMember'])) {
     $memberId = $_POST['updateExistingMember'];

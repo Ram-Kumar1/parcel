@@ -2,10 +2,6 @@
 <html lang="en">
 <link rel="stylesheet" href="./css/table-filter.css">
 
-<style>
-
-</style>
-
 <body>
 
     <!--*******************
@@ -22,7 +18,6 @@
         Preloader end
     ********************-->
 
-
     <!--**********************************
         Main wrapper start
     ***********************************-->
@@ -35,17 +30,11 @@
         $date = date('Y-m-d', strtotime($date_1));
 
         include 'header.php';
-
-
-
-
         $userName = $_SESSION['userName'] ?? 'GUEST';
         $branchName = $_SESSION['admin'] ?? 'GUEST';
 
         // Start base SQL query
         $sql = "SELECT * FROM booking BD  WHERE IS_DELETE = 0";
-
-
 
         if (strtolower($userName) !== 'admin') {
             // Escape user input to prevent SQL injection
@@ -496,7 +485,7 @@
                     .filter(item => Object.keys(item).length > 0)
                     .map(item => {
                         return Object.entries(item).map(([key, value]) => `${key}:${value}`).join(',');
-                    }).join('\n'); 
+                    }).join('\n');
                 $('#items').val(finalString);
 
                 $('#transportType').val(res['TRANSPORT_TYPE']);

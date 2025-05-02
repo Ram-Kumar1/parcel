@@ -149,7 +149,7 @@
                                     <div class="row">
                                         <div class="col-12 d-flex justify-content-between align-items-center">
                                             <div class="flex-grow-1 text-center">
-                                                <h2 class="m-t-p5 mb-0">BOOKING LIST</h2> <?php $branchId; ?>
+                                                <h2 class="m-t-p5 mb-0"> CREATE GDM</h2> 
                                             </div>
                                         </div>
                                     </div>
@@ -269,7 +269,7 @@
                                                 </button>
                                                 <table id="data-table" class="table table-striped tableFixHead">
                                                     <thead>
-                                                        <tr class="filters" style="color:#0c1211;">
+                                                        <tr class="filters text-center" style="color:#0c1211;">
                                                             <th>#</th>
                                                             <th style="text-align: center;">LR Number</th>
                                                             <th>Customer</th>
@@ -287,10 +287,10 @@
                                                         $i = 1;
                                                         while ($row = mysqli_fetch_assoc($finalResult)) {
                                                         ?>
-                                                            <tr class="invoice-id-<?php echo $row['BOOKING_ID']; ?>">
+                                                            <tr class="text-center invoice-id-<?php echo $row['BOOKING_ID']; ?>">
                                                                 <td><?php echo $i++; ?></td>
                                                                 <td>
-                                                                    <a data-toggle="modal" class="booking-id"
+                                                                    <a data-toggle="modal" class="booking-id text-dark"
                                                                         id="booking-id-<?php echo $row['BOOKING_ID']; ?>" href="">
                                                                         <?php echo $row['LR_NUMBER'] ?? 'NO LR NUMBER'; ?>
                                                                     </a>
@@ -324,7 +324,7 @@
                                                                 <td><?php echo htmlspecialchars($row['TO_MOBILE']); ?></td>
                                                                 <td><?php echo htmlspecialchars($row['BOOKING_DATETIME']); ?></td>
                                                                 <td>
-                                                                    <a data-toggle="modal" onclick="updateToShipOut(<?php echo (int)$row['BOOKING_ID']; ?>)"
+                                                                    <a data-toggle="modal" onclick="createGDM(<?php echo (int)$row['BOOKING_ID']; ?>)"
                                                                         id="move-booking-id-<?php echo $row['BOOKING_ID']; ?>"
                                                                         data-booking-id="<?php echo $row['BOOKING_ID']; ?>"
                                                                         data-to-place="<?php echo $row['TO_BRANCH_ID']; ?>" href="">
@@ -561,7 +561,7 @@
         });
     };
 
-    let updateToShipOut = function(bookingId) {
+    let createGDM = function(bookingId) {
         let shipmentVia = $("#shipment-via").val();
         let hubSelect = $("#hub-select").val();
         let driverName = $("#driverName").val();
@@ -598,7 +598,7 @@
             url: 'bookingDataOperations.php',
             type: 'post',
             data: {
-                moveToShipOutward: 1,
+                createGDM: 1,
                 bookingId: bookingId,
                 shipmentVia: shipmentVia,
                 hubSelect: hubSelect,

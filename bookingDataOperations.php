@@ -240,6 +240,15 @@ if (isset($_POST['updateNewBooking'])) {
         print_r("Error Occurred: " . $e->getMessage());
     }
 }
+//Delete Booking Details
+if (isset($_POST['isDeleteBooking'])) {
+    $bookingId = $_POST['bookingId'];
+
+    $data = array(
+        'IS_DELETE' => 1,
+    );
+    echo $dbOperator->updateData("booking", $data, ["BOOKING_ID" => $bookingId]);
+}
 
 if (isset($_POST['forBookingList'])) {
     $bookingId = $_POST['bookingId'];
@@ -277,13 +286,13 @@ if (isset($_POST['forBookingList'])) {
     print_r(json_encode($bookingDetails));
 }
 //getDriverDetails
-if (isset($_POST['getDriverDetails'])){
+if (isset($_POST['getDriverDetails'])) {
     $mobileNumber = $_POST['mobileNumber'];
     $stmt = $conn->prepare("SELECT DRIVER_NAME, VEHICLE_NUMBER, VEHICLE_NAME,LICENSE FROM driver_details WHERE MOBILE = ?");
     $stmt->bind_param("s", $mobileNumber);
     $stmt->execute();
     $result = $stmt->get_result();
-    
+
     if ($row = $result->fetch_assoc()) {
         echo json_encode([
             'success' => true,
@@ -295,10 +304,9 @@ if (isset($_POST['getDriverDetails'])){
     } else {
         echo json_encode(['success' => false]);
     }
-
 }
 
-if (isset($_POST['moveToShipOutward'])) {
+if (isset($_POST['createGDM'])) {
     $bookingId      = $_POST['bookingId'];
     $shipmentVia    = $_POST['shipmentVia'];
     $hubSelect = ($shipmentVia === 'Hub') ? $_POST['hubSelect'] : $shipmentVia;
@@ -324,16 +332,16 @@ if (isset($_POST['moveToShipOutward'])) {
         if (!$gdmIdResponse) {
             throw new Exception("Failed to insert into gdm_number table.");
         }
-        
+
         // Extract the numeric ID
         preg_match('/\d+$/', $gdmIdResponse, $matches);
         $gdmId = $matches[0] ?? null;
-        
+
         if (!$gdmId) {
             throw new Exception("Invalid GDM ID returned.");
         }
-        
-         $mappingData = [
+
+        $mappingData = [
             "GDM_ID"         => $gdmId,
             "DRIVER_NAME"    => $driverName,
             "DRIVER_NUMBER"  => $mobileNumber,
@@ -351,6 +359,7 @@ if (isset($_POST['moveToShipOutward'])) {
     }
 }
 
+//GDM Number
 function getGDMNo($conn)
 {
     $cdate = date('Y-m-d');
@@ -394,254 +403,100 @@ function getGDMNo($conn)
     }
 }
 
-if (isset($_POST['revertShipOutward'])) {
-    $bookingId = $_POST['bookingId'];
 
-    try {
-        /* Update the booking_status in booking_details */
-        // $data = array(
-        //     'BOOKING_STAUTS' => 0,
-        // );
-        // $where = array('BOOKING_ID' => $bookingId);
-        // echo $dbOperator->updateData("booking_details", $data, $where);
+//createTrip
+if (isset($_POST['createTrip'])) {
+    // Fix typo: $_post ➜ $_POST
+    $gdmIds = $_POST['gdmIds'] ?? [];
+    $openingKm = $_POST['openingKm'] ?? '';
+    $closingKm = $_POST['closingKm'] ?? '';
+    $dieselAmount = $_POST['dieselAmount'] ?? '';
+    $dieselLitter = $_POST['dieselLitter'] ?? 'None';
+    $advanceAmount = $_POST['advanceAmount'] ?? '';
+    $totalAmount = $_POST['totalAmount'] ?? '';
 
-        echo $updateQuery = "UPDATE booking_details SET BOOKING_STAUTS = 4 WHERE BOOKING_ID = $bookingId";
-        if (isset($conn)) {
-            mysqli_query($conn, $updateQuery);
-            print_r("Success");
-        }
-        /* Delete the existing records in shipment_details */
-
-
-        // echo $updateQuery = $dbOperator->deleteRecord("shipment_details", ["BOOKING_ID" => $bookingId]);
-
-        echo $updateQuery = "DELETE FROM shipment_details WHERE BOOKING_ID = $bookingId";
-        if (isset($conn)) {
-            mysqli_query($conn, $updateQuery);
-            print_r("Success");
-        }
-    } catch (Exception $e) {
-        print_r("Error: " . $e);
-    }
-}
-
-if (isset($_POST['moveToCBEShipOutward'])) {
-    $bookingId = $_POST['bookingId'];
-    $driverDetails = $_POST['driverDetails'];
-    try {
-
-        $data = array(
-            'BOOKING_STAUTS' => 2,
-            'LAST_UPDATE_DATE' => $date,
-
+    if (!empty($gdmIds) && is_array($gdmIds)) {
+        $gdmIdString = implode(',', $gdmIds); 
+        $gdmData = array(
+            "GDM_ID" => $gdmIdString
         );
-        $where = array('BOOKING_ID' => $bookingId);
-        echo $dbOperator->updateData("booking_details", $data, $where);
-
-        // echo $updateQuery = "UPDATE booking_details SET BOOKING_STAUTS = 2, LAST_UPDATE_DATE = '$date' WHERE BOOKING_ID = $bookingId";
-        // if (isset($conn)) {
-        //     mysqli_query($conn, $updateQuery);
-
-
-        //     // $data = array(
-        //     //     'BOOKING_ID' => $bookingId,
-        //     //     'SHIPMENT_2_DATE' => $date,
-        //     //     'SHIPMENT_2_DATE_TIME' => $dateTime,
-        //     //     'DRIVER_2_DETAILS' => $driverDetails
-        //     // );
-        //     // $where = array('BOOKING_ID' => $bookingId);
-        //     // echo $updateDriverDetailsQry = $dbOperator->updateData("shipment_details", $data, $where);
-
-        //     echo $updateDriverDetailsQry = "
-        //                 UPDATE shipment_details SET 
-        //                     SHIPMENT_2_DATE = '$date', 
-        //                     SHIPMENT_2_DATE_TIME = '$dateTime', 
-        //                     DRIVER_2_DETAILS = '$driverDetails'
-        //                 WHERE BOOKING_ID = $bookingId
-        //                 ";
-
-        //     mysqli_query($conn, $updateDriverDetailsQry);
-        //     print_r("Success");
-        // }
-    } catch (Exception $e) {
-        print_r("Error: " . $e);
-    }
-}
-
-if (isset($_POST['revertCBEShipOutward'])) {
-    $bookingId = $_POST['bookingId'];
-    try {
-
-        $data = array(
-            'BOOKING_STAUTS' => 1,
-            'LAST_UPDATE_DATE' => $date,
-        );
-        $where = array('BOOKING_ID' => $bookingId);
-        echo $dbOperator->updateData("booking_details", $data, $where);
-
-        // echo $updateQuery = "UPDATE booking_details SET BOOKING_STAUTS = 1 WHERE BOOKING_ID = $bookingId";
-        // if (isset($conn)) {
-        //     mysqli_query($conn, $updateQuery);
-        //     // echo $deleteDriverDetailsQry = "DELETE FROM `shipoutward_details` WHERE `BOOKING_ID` = $bookingId";
-        //     // mysqli_query($conn, $deleteDriverDetailsQry);
-        //     print_r("Success");
-        // }
-    } catch (Exception $e) {
-        print_r("Error: " . $e);
-    }
-}
-
-if (isset($_POST['moveToShipInward'])) {
-    $bookingId = $_POST['bookingId'];
-    try {
-        // $data = array(
-        //     'BOOKING_STAUTS' => 3,
-        //     'LAST_UPDATE_DATE' => $date,
-        // );
-        // $where = array('BOOKING_ID' => $bookingId);
-        // echo $updateQuery = $dbOperator->updateData("booking_details", $data, $where);
-
-        echo $updateQuery = "UPDATE booking_details SET BOOKING_STAUTS = 3, LAST_UPDATE_DATE = '$date' WHERE BOOKING_ID = $bookingId";
-        if (isset($conn)) {
-            mysqli_query($conn, $updateQuery);
-            print_r("Success");
+       $tripIdResponse = $dbOperator->insertData('trip_gdm_mapping', $gdmData);
+        if (!$tripIdResponse) {
+            throw new Exception("Failed to insert into gdm_number table.");
         }
-    } catch (Exception $e) {
-        print_r("Error: " . $e);
     }
+
+        // Extract the numeric ID
+        preg_match('/\d+$/', $tripIdResponse, $matches);
+        $tripId = $matches[0] ?? null;
+
+        if (!$tripId) {
+            throw new Exception("Invalid GDM ID returned.");
+        }
+
+    $tripNumber = tripNo($conn);
+    $data = array(
+        "TRIP_MAPPING_ID" => $tripId,
+        "TRIP_NUMBER" => $tripNumber,
+        "OPENING_KM" => $openingKm,
+        "CLOSING_KM" => $closingKm,
+        "DIESEL_AMOUNT" => $dieselAmount,
+        "DIESEL_LITTER" => $dieselLitter,
+        "ADVANCE_AMOUNT" => $advanceAmount,
+        "TOTAL_AMOUNT" => $totalAmount
+    );
+
+    echo $dbOperator->insertData('trip_details', $data);
 }
 
-if (isset($_POST['revertShipinward'])) {
-    $bookingId = $_POST['bookingId'];
-    $shipmentVia = $_POST['shipmentVia'];
+
+
+//Trip Number
+function tripNo($conn)
+{
+    $cdate = date('Y-m-d');
+    $datePart = date('Ymd');
+    mysqli_begin_transaction($conn);
+
     try {
-        if ($shipmentVia == "Via_Coimbatore") {
+        $checkDateQry = "SELECT TRIP_NO FROM ref_trip_no WHERE DATE = '$cdate' LIMIT 1";
+        $checkResult = mysqli_query($conn, $checkDateQry);
 
-            // $data = array(
-            //     'BOOKING_STAUTS' => 2,
-            //     'LAST_UPDATE_DATE' => $date,
-            // );
-            // $where = array('BOOKING_ID' => $bookingId);
-            // echo $updateQuery = $dbOperator->updateData("booking_details", $data, $where);
+        if (!$checkResult) {
+            throw new Exception("Failed to check TRIP number: " . mysqli_error($conn));
+        }
 
-            echo $updateQuery = "UPDATE booking_details SET BOOKING_STAUTS = 1 WHERE BOOKING_ID = $bookingId";
-            if (isset($conn)) {
-                mysqli_query($conn, $updateQuery);
-                print_r("Success");
+        if (mysqli_num_rows($checkResult) > 0) {
+            $row = mysqli_fetch_assoc($checkResult);
+            $currentLR = (int)$row['TRIP_NO'];
+            $newLR = str_pad($currentLR + 1, 3, '0', STR_PAD_LEFT);
+
+            $updateLRNumberQry = "UPDATE ref_trip_no SET TRIP_NO = '$newLR' WHERE DATE = '$cdate'";
+            if (!mysqli_query($conn, $updateLRNumberQry)) {
+                throw new Exception("Failed to update TRIP number: " . mysqli_error($conn));
             }
+
+            $lrSerial = $newLR;
         } else {
-
-            // $data = array(
-            //             'BOOKING_STAUTS' => 0,
-            //             'LAST_UPDATE_DATE' => $date,
-            //         );
-            //         $where = array('BOOKING_ID' => $bookingId);
-            //         echo $updateQuery = $dbOperator->updateData("booking_details", $data, $where);
-
-            echo $updateQuery = "UPDATE booking_details SET BOOKING_STAUTS = 0 WHERE BOOKING_ID = $bookingId";
-            if (isset($conn)) {
-                mysqli_query($conn, $updateQuery);
-                print_r("Success");
+            $lrSerial = '001';
+            $insertLRQry = "INSERT INTO ref_trip_no (DATE, TRIP_NO) VALUES ('$cdate', '$lrSerial')";
+            if (!mysqli_query($conn, $insertLRQry)) {
+                throw new Exception("Failed to insert TRIP number: " . mysqli_error($conn));
             }
         }
+
+        $finalLRNumber = 'TRIP-' . $datePart . '-' . $lrSerial;
+        mysqli_commit($conn);
+        return $finalLRNumber;
     } catch (Exception $e) {
-        print_r("Error: " . $e);
+        mysqli_rollback($conn);
+        echo "Error in GDM generation: " . $e->getMessage();
+        return false;
     }
 }
 
-if (isset($_POST['newCustomerName'])) {
-    /* $mobileNumber = $_POST['mobileNumber'];
-    $newCustomerName = $_POST['newCustomerName'];
-    
-    $updateQuery = "
-                        UPDATE customer_details SET
-                          CUSTOMER_NAME = '$newCustomerName'
-                        WHERE MOBILE = '$mobileNumber'
-                   ";
-    mysqli_query($conn, $updateQuery); */
-    echo "inserted";
-}
-
-if (isset($_POST['updateMobileNumber'])) {
-    //    $customerName = $_POST['customerName'];
-    /* $mobileNumber = $_POST['mobileNumber'];
-
-    $data = array(
-        'MOBILE' => $mobileNumber,
-    );
-    $where = array(
-        'MOBILE' => $mobileNumber
-    );
-    $dbOperator->insertData("customer_details", $data, $where);
-
-    $upsertQuery = "
-                        INSERT INTO customer_details (MOBILE)
-                        SELECT * FROM (SELECT '$mobileNumber') AS tmp
-                        WHERE NOT EXISTS (
-                            SELECT MOBILE FROM customer_details WHERE MOBILE = '$mobileNumber'
-                        ) LIMIT 1
-                   ";
-    mysqli_query($conn, $upsertQuery); */
-}
-
-if (isset($_POST['getBookingDetailsUnderCBEHub'])) {
-    $toPlace = $_POST['toPlace'];
 
 
-    // $data = array(
-    //     'TO_PLACE' => $toPlace,
-    //     'BOOKING_STATUS' => 1
-    // );
-    // $where = array(
-    //     'TO_PLACE' => $toPlace,
-    //     'BOOKING_STATUS' => 1
-    // );
-    // $dbOperator->selectQueryToJson("booking_details", $data, $where);
-
-    $selectSql = "
-                    SELECT *
-                    WHERE TO_PLACE = '$toPlace' AND BOOKING_STATUS = 1
-                ";
-    $bookingDetails = array();
-    if (isset($conn) && $result = mysqli_query($conn, $selectSql)) {
-        if (mysqli_num_rows($result) > 0) {
-            while ($row = mysqli_fetch_array($result)) {
-                $bookingDetails['BOOKING_ID'] = $row['BOOKING_ID'];
-                $bookingDetails['CUSTOMER'] = $row['CUSTOMER'];
-                $bookingDetails['MOBILE'] = $row['MOBILE'];
-                $bookingDetails['DELIVERY_TO'] = $row['DELIVERY_TO'];
-                $bookingDetails['DELIVERY_MOBILE'] = $row['DELIVERY_MOBILE'];
-                $bookingDetails['FROM_PLACE'] = $row['FROM_PLACE'];
-                $bookingDetails['FROM_MOBILE'] = $row['FROM_MOBILE'];
-                $bookingDetails['TO_PLACE'] = $row['TO_PLACE'];
-                $bookingDetails['TO_MOBILE'] = $row['TO_MOBILE'];
-                $bookingDetails['QUANTITY'] = $row['QUANTITY'];
-                $bookingDetails['QUANTITY_DETAILS'] = $row['QUANTITY_DETAILS'];
-                $bookingDetails['QTY_DESCRIPTION'] = $row['QTY_DESCRIPTION'];
-                $bookingDetails['PAYMENT_TYPE'] = $row['PAYMENT_TYPE'];
-                $bookingDetails['TOTAL_AMOUNT'] = $row['TOTAL_AMOUNT'];
-                $bookingDetails['TRANSPORTATION_COST'] = $row['TRANSPORTATION_COST'];
-                $bookingDetails['LOADING_COST'] = $row['LOADING_COST'];
-                $bookingDetails['ADDITIONAL_COST'] = $row['ADDITIONAL_COST'];
-                $bookingDetails['GOODS_VALUE'] = $row['GOODS_VALUE'];
-                $bookingDetails['DELIVERY_TYPE'] = $row['DELIVERY_TYPE'];
-                $bookingDetails['INVOICE_NUMBER'] = $row['INVOICE_NUMBER'];
-                $bookingDetails['BOOKING_STAUTS'] = $row['BOOKING_STAUTS'];
-            }
-        }
-    }
-    print_r(json_encode($bookingDetails));
-}
-
-//Delete Booking Details
-if (isset($_POST['isDeleteBooking'])) {
-    $bookingId = $_POST['bookingId'];
-
-    $data = array(
-        'IS_DELETE' => 1,
-    );
-    echo $dbOperator->updateData("booking", $data, ["BOOKING_ID" => $bookingId]);
-}
 
 //UpdatePayment
 if (isset($_POST['UpdatePayment'])) {

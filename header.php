@@ -332,8 +332,8 @@ include 'dbConn.php';
                     <li><a href="viewBookingList.php">Booking List</a></li>
                     <li><a href="createGDM.php">Create GDM</a></li>
                     <li><a href="viewGDM.php">View GDM</a></li>
-                    <li id="cbe-hub-li"><a href="createShipOutwardFromCBEHub.php">Create Ship Outward From CBE</a></li>
-                    <li><a href="viewShipOutward.php">View Ship Outward</a></li>
+                    <li id="cbe-hub-li"><a href="trip.php">Create Trip</a></li>
+                    <li><a href="viewTrip.php">View Trip</a></li>
                     <li><a href="shipInward.php">Ship Inward</a></li>
                     <!-- <li><a href="production_Flow_report.php">Report</a></li> -->
                 </ul>

@@ -59,11 +59,8 @@
                                     <div class="row">
                                         <div class="col-12 d-flex justify-content-between align-items-center">
                                             <div class="flex-grow-1 text-center">
-                                                <h2 class="m-t-p5 mb-0 mb-5">VIEW GDM DETAILS </h2>
+                                                <h2 class="m-t-p5 mb-0 mb-5">VIEW TRIP DETAILS </h2>
                                             </div>
-                                            <button type="button" class="btn btn-success btn-sm pull-right" style="margin-top: 1em; margin-right: 1em;" onclick="printDiv()">
-                                                <i class="material-icons" style="font-size: initial;">print</i>
-                                            </button>
                                         </div>
                                     </div>
                                     <div id="table-data" class="table-responsive filterable max-30">
@@ -71,11 +68,14 @@
                                             <thead>
                                                 <tr class="text-center">
                                                     <th>Sno</th>
-                                                    <th>GDM Number</th>
-                                                    <th>Shipment Area</th>
-                                                    <th>Driver Name</th>
-                                                    <th>Driver Mobile</th>
-                                                    <th>View GDM Details</th>
+                                                    <th>Trip Number</th>
+                                                    <th>Opening KM</th>
+                                                    <th>Closing KM</th>
+                                                    <th>Diesel Amount</th>
+                                                    <th>Diesel Of Litter</th>
+                                                    <th>Advance Amount</th>
+                                                    <th>Total Amount</th>
+                                                    <th>View GDM</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -83,10 +83,9 @@
                                                 $userName = $_SESSION['userName'] ?? null;
                                                 $branchName = $_SESSION['admin'] ?? null;
                                                 $sno = 1;
-
                                                 function getGDMDetails($conn)
                                                 {
-                                                    $sql = "SELECT * FROM v_gdm_details";
+                                                    $sql = "SELECT * FROM v_viewtrip";
                                                     $result = $conn->query($sql);
 
                                                     $data = [];
@@ -104,12 +103,15 @@
                                                 foreach ($gdmDetails as $row) {
                                                     echo "<tr class='text-center'>
                                                     <td>" . $sno . "</td>
-                                                    <td>" . ($row['GDM_NUMBER'] ?? 'N/A') . "</td>
-                                                    <td>" . ($row['SHIPMENT_AREA'] ?? 'N/A') . "</td>
-                                                    <td>" . ($row['DRIVER_NAME'] ?? 'N/A') . "</td>
-                                                    <td>" . ($row['DRIVER_NUMBER'] ?? 'N/A') . "</td>
+                                                    <td>" . ($row['TRIP_NUMBER'] ?? 'N/A') . "</td>
+                                                    <td>" . ($row['OPENING_KM'] ?? 'N/A') . "</td>
+                                                    <td>" . ($row['CLOSING_KM'] ?? 'N/A') . "</td>
+                                                    <td>" . ($row['DIESEL_AMOUNT'] ?? 'N/A') . "</td>
+                                                    <td>" . ($row['DIESEL_LITTER'] ?? 'N/A') . "</td>
+                                                    <td>" . ($row['ADVANCE_AMOUNT'] ?? 'N/A') . "</td>
+                                                    <td>" . ($row['TOTAL_AMOUNT'] ?? 'N/A') . "</td>
                                                      <td>
-                                                          <a class='a-view-icon' href='viewGDMdetails.php?gdm=" . $row['GDM_ID'] . "'>
+                                                          <a class='a-view-icon' href='viewTripGDM.php?gdm=".$row['tgm_trip_mapping_id'] . "'>
                                                             <i class='material-icons' style='cursor:pointer;'>remove_red_eye</i>
                                                           </a>
                                                     </td>
@@ -148,37 +150,6 @@
     <!-- Prevent Number Scrolling -->
     <script src="./js/chits/numberInputPreventScroll.js"></script>
     <script type="text/javascript">
-        let printDiv = function() {
-            $("#print-out-details").show();
-
-            // Hide specific columns before printing
-            $('td:first-child, th:first-child').hide(); // First column
-            $('td:nth-child(7), th:nth-child(7)').hide();
-            $('td:nth-child(8), th:nth-child(8)').hide();
-            $('td:last-child, th:last-child').hide(); // Last column
-
-            // Print contents
-            let printContents = document.getElementById('print-div').innerHTML;
-            let originalContents = document.body.innerHTML;
-            document.body.innerHTML = printContents;
-            window.print();
-            document.body.innerHTML = originalContents;
-
-            // Restore original visibility
-            $("#print-out-details").hide();
-            $('td:first-child, th:first-child').show();
-            $('td:nth-child(7), th:nth-child(7)').show();
-            $('td:nth-child(8), th:nth-child(8)').show();
-            $('td:last-child, th:last-child').show();
-
-            // Re-initialize select2 if needed
-            $('select[data-select2-id="5"]').select();
-
-            // Reload the page to restore JS state
-            window.location.reload();
-        };
-
-
         $(document).ready(function() {
             $("#data-table").ddTableFilter();
             $('select').addClass('w3-select');

@@ -86,8 +86,8 @@
     ***********************************-->
     <div id="main-wrapper">
 
-        <?php include 'header.php'; 
-        
+        <?php include 'header.php';
+
         $userName = $_SESSION['userName'];
         $branchName = $_SESSION['admin'];
 
@@ -96,10 +96,9 @@
         $stmt->bind_param("s", $branchName);
         $stmt->execute();
         $result = $stmt->get_result();
-    
+
         while ($row = $result->fetch_assoc()) {
             $fromBranchId = $row['BRANCH_ID'];
-          
         }
         ?>
 
@@ -116,7 +115,7 @@
                                     <div class="row">
                                         <div class="col-12 d-flex justify-content-between align-items-center">
                                             <div class="flex-grow-1 text-center">
-                                                <h2 class="m-t-p5 mb-4">NEW BOOKING</h2>  
+                                                <h2 class="m-t-p5 mb-4">NEW BOOKING</h2>
                                             </div>
                                             <button type="button" class="btn btn-info btn-md" onclick="window.location.href='viewBookingList.php'">
                                                 <i class="fa fa-eye" aria-hidden="true" style="font-size: medium !important;"></i>
@@ -137,7 +136,7 @@
                                                     <div class="form-group">
                                                         <label for="">Bill No<span class="mandatory-field text-danger">*</span></label>
                                                         <input type="text" required class="form-control" id="billNo" placeholder="Auto Generate"
-                                                        value="01"     name="billNo" readonly />
+                                                            value="01" name="billNo" readonly />
                                                     </div>
                                                 </div>
                                                 <div class="col-12 col-sm-4">
@@ -351,7 +350,7 @@
                                                 <div class="col-12 col-sm-4">
                                                     <div class="form-group">
                                                         <label for="">DCC<span class="mandatory-field text-danger"></span></label>
-                                                        <input type="text" required class="form-control" id="dcc"
+                                                        <input type="text" required class="form-control" id="dcc" placeholder="Enter Dcc"
                                                             name="dcc" />
                                                     </div>
                                                 </div>
@@ -369,7 +368,7 @@
                                                 <div class="col-12 col-sm-4">
                                                     <div class="form-group">
                                                         <label for="">Total Fright<span class="mandatory-field text-danger">*</span></label>
-                                                        <input type="text" required class="form-control" id="totalFright" name="totalFright" readonly />
+                                                        <input type="text" required class="form-control" id="totalFright" name="totalFright"  readonly />
                                                     </div>
                                                 </div>
                                             </div>
@@ -377,14 +376,14 @@
                                                 <div class="col-12 col-sm-4">
                                                     <div class="form-group">
                                                         <label for="">Loading<span class="mandatory-field text-danger"></span></label>
-                                                        <input type="text" required class="form-control" id="loading"
+                                                        <input type="text" required class="form-control" id="loading" placeholder="Enter Loading Amount"
                                                             name="loading" />
                                                     </div>
                                                 </div>
                                                 <div class="col-12 col-sm-4">
                                                     <div class="form-group">
                                                         <label for="">Unloading<span class="mandatory-field text-danger"></span></label>
-                                                        <input type="text" required class="form-control" id="unloading"
+                                                        <input type="text" required class="form-control" id="unloading" placeholder="Enter Unloading Amount"
                                                             name="unloading" />
                                                     </div>
                                                 </div>
@@ -404,8 +403,9 @@
                                                     </div>
                                                 </div>
                                             </div>
-
-                                            <input type="submit" class="btn btn-primary btn-lg" onclick="saveData()" value="Submit">
+                                            <div class="d-flex justify-content-center">
+                                                <input type="submit" class="btn btn-success btn-lg" onclick="saveData()" value="Submit">
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -576,55 +576,55 @@
     });
 
 
-    $(document).ready(function () {
-    // Recalculate freight when rate or weight changes
-    $(document).on('input', '.rate, .weight', function () {
-        const row = $(this).closest('tr');
-        const rate = parseFloat(row.find('.rate').val()) || 0;
-        const weight = parseFloat(row.find('.weight').val()) || 0;
-        const freight = rate * weight;
+    $(document).ready(function() {
+        // Recalculate freight when rate or weight changes
+        $(document).on('input', '.rate, .weight', function() {
+            const row = $(this).closest('tr');
+            const rate = parseFloat(row.find('.rate').val()) || 0;
+            const weight = parseFloat(row.find('.weight').val()) || 0;
+            const freight = rate * weight;
 
-        row.find('.freight').val(freight.toFixed(2));
-        calculateTotalFreight(); // update total freight and final amount
+            row.find('.freight').val(freight.toFixed(2));
+            calculateTotalFreight(); // update total freight and final amount
+        });
+
+        // Optional: Auto-fill weight based on qty when UOM is Kg
+        $(document).on('input', '.qty', function() {
+            const row = $(this).closest('tr');
+            const qty = parseFloat(row.find('.qty').val()) || 0;
+            const uom = row.find('.uom').val();
+
+            if (uom === 'Kg') {
+                row.find('.weight').val(qty).trigger('input'); // trigger to update freight
+            }
+        });
     });
 
-    // Optional: Auto-fill weight based on qty when UOM is Kg
-    $(document).on('input', '.qty', function () {
-        const row = $(this).closest('tr');
-        const qty = parseFloat(row.find('.qty').val()) || 0;
-        const uom = row.find('.uom').val();
+    // Calculate total freight and update amount
+    function calculateTotalFreight() {
+        let total = 0;
+        $('.freight').each(function() {
+            total += parseFloat($(this).val()) || 0;
+        });
+        $('#totalFright').val(total.toFixed(2));
+        calculateAmount();
+    }
 
-        if (uom === 'Kg') {
-            row.find('.weight').val(qty).trigger('input'); // trigger to update freight
-        }
+    // Calculate final amount
+    function calculateAmount() {
+        const totalFreight = parseFloat($('#totalFright').val()) || 0;
+        const loading = parseFloat($('#loading').val()) || 0;
+        const unloading = parseFloat($('#unloading').val()) || 0;
+        const lrAmount = parseFloat($('#lrAmount').val()) || 0;
+
+        const totalAmount = totalFreight + loading + unloading + lrAmount;
+        $('#amount').val(totalAmount.toFixed(2));
+    }
+
+    // Update amount if loading/unloading/lrAmount changes
+    $(document).on('input', '#loading, #unloading, #lrAmount', function() {
+        calculateAmount();
     });
-});
-
-// Calculate total freight and update amount
-function calculateTotalFreight() {
-    let total = 0;
-    $('.freight').each(function () {
-        total += parseFloat($(this).val()) || 0;
-    });
-    $('#totalFright').val(total.toFixed(2));
-    calculateAmount();
-}
-
-// Calculate final amount
-function calculateAmount() {
-    const totalFreight = parseFloat($('#totalFright').val()) || 0;
-    const loading = parseFloat($('#loading').val()) || 0;
-    const unloading = parseFloat($('#unloading').val()) || 0;
-    const lrAmount = parseFloat($('#lrAmount').val()) || 0;
-
-    const totalAmount = totalFreight + loading + unloading + lrAmount;
-    $('#amount').val(totalAmount.toFixed(2));
-}
-
-// Update amount if loading/unloading/lrAmount changes
-$(document).on('input', '#loading, #unloading, #lrAmount', function () {
-    calculateAmount();
-});
 
     //saveData
     function saveData() {
@@ -729,7 +729,7 @@ $(document).on('input', '#loading, #unloading, #lrAmount', function () {
         // Prepare form data
         const formData = {
             addNewBooking: 1,
-            fromBranchId:fromBranchId,
+            fromBranchId: fromBranchId,
             date_time: document.getElementById('dateTime').value,
             bill_no: document.getElementById('billNo').value,
             manual_lr: document.getElementById('manualLr').value,
