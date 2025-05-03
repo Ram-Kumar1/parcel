@@ -1,5 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
+<style>
+    hr {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .m-t-3 {
+        margin-top: 0.5em;
+    }
+
+    .w-100 {
+        width: 100%
+    }
+
+    #from_customer,
+    #to_customer {
+        accent-color: black;
+        /* For modern browsers */
+        width: 18px;
+        height: 18px;
+        border: 6px solid black;
+        /* fallback for border */
+        appearance: none;
+        /* remove default checkbox style */
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        border-radius: 3px;
+        cursor: pointer;
+        position: relative;
+    }
+</style>
+
 <script>
     let customerNameMobileMap = {};
     let tocustomerNameMobileMap = {};
@@ -9,24 +43,59 @@
     let customerNameSelectChanged = function(select) {
         let selectVal = $(select).val();
         $("#fromMobile").val(customerNameMobileMap[selectVal]);
+
+        // Also set From Name if MOBILE was selected first
+        if ($("#fromName").val() !== selectVal) {
+            $("#fromName").select2({
+                tags: true
+            }).val(selectVal).trigger('change');
+        }
     };
+
     let tocustomerNameSelectChanged = function(select) {
         let selectVal = $(select).val();
         $("#toMobile").val(tocustomerNameMobileMap[selectVal]);
+
+        // Also set To Name if MOBILE was selected first
+        if ($("#toName").val() !== selectVal) {
+            $("#toName").select2({
+                tags: true
+            }).val(selectVal).trigger('change');
+        }
     };
 
     let mobileNumberChanged = function(select) {
-        let selectVal = $(select).val();
+        let fromVal = $(select).val();
+        let toVal = $("#toMobile").val();
+
+        if (fromVal !== "" && fromVal === toVal) {
+            alert("Please select a different FROM Mobile number. It cannot be the same as TO Mobile.");
+            $(select).val("").trigger('change');
+            $("#fromName").val("").trigger('change');
+            return;
+        }
+
+        const name = customerMobileNameMap[fromVal];
         $("#fromName").select2({
             tags: true
-        }).val(customerMobileNameMap[selectVal]).trigger('change');
+        }).val(name).trigger('change');
     };
 
     let tomobileNumberChanged = function(select) {
-        let selectVal = $(select).val();
+        let toVal = $(select).val();
+        let fromVal = $("#fromMobile").val();
+
+        if (toVal !== "" && toVal === fromVal) {
+            alert("Please select a different TO Mobile number. It cannot be the same as FROM Mobile.");
+            $(select).val("").trigger('change');
+            $("#toName").val("").trigger('change');
+            return;
+        }
+
+        const name = tocustomerMobileNameMap[toVal];
         $("#toName").select2({
             tags: true
-        }).val(tocustomerMobileNameMap[selectVal]).trigger('change');
+        }).val(name).trigger('change');
     };
 </script>
 
@@ -51,9 +120,12 @@
         Main wrapper start
     ***********************************-->
     <div id="main-wrapper">
+
         <?php include 'header.php';
+
         $userName = $_SESSION['userName'];
-        $branchName = $_SESSION['admin'];
+        echo  $branchName = $_SESSION['admin'];
+
         $getFromBranchId = "SELECT BRANCH_ID FROM branches WHERE ROUTE_NAME = ?";
         $stmt = $conn->prepare($getFromBranchId);
         $stmt->bind_param("s", $branchName);
@@ -99,7 +171,7 @@
                                                     <div class="form-group">
                                                         <label for="">Bill No<span class="mandatory-field text-danger">*</span></label>
                                                         <input type="text" required class="form-control" id="billNo" placeholder="Auto Generate"
-                                                            value="01" name="billNo" readonly />
+                                                            name="billNo" readonly />
                                                     </div>
                                                 </div>
                                                 <div class="col-12 col-sm-4">
@@ -331,7 +403,7 @@
                                                 <div class="col-12 col-sm-4">
                                                     <div class="form-group">
                                                         <label for="">Total Fright<span class="mandatory-field text-danger">*</span></label>
-                                                        <input type="text" required class="form-control" id="totalFright" name="totalFright"  readonly />
+                                                        <input type="text" required class="form-control" id="totalFright" name="totalFright" readonly />
                                                     </div>
                                                 </div>
                                             </div>
@@ -367,7 +439,7 @@
                                                 </div>
                                             </div>
                                             <div class="d-flex justify-content-center">
-                                                <input type="submit" class="btn btn-success btn-lg" onclick="saveData()" value="Submit">
+                                                <button class="btn btn-success btn-lg" onclick="saveData()"><i class="fa fa-floppy-o"></i> &nbsp;Save</button>
                                             </div>
                                         </div>
                                     </div>
@@ -384,13 +456,16 @@
     <?php include 'footer.php'; ?>
 
 </body>
+<!-- Select2 Fileter -->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <!-- Table Filter -->
 <script src="./js/ddtf.js"></script>
 <!-- Prevent Number Scrolling -->
 <script src="./js/chits/numberInputPreventScroll.js"></script>
-<script>
+
+
+<script type="text/javascript">
     //AddRow
     function addRow() {
         const tableBody = $('#itemTable tbody');
@@ -449,7 +524,6 @@
                 getItem: 1
             },
             success: function(response) {
-                console.log('Server Response:', response);
                 targetSelect.each(function() {
                     if ($(this).children('option').length === 1) {
                         $(this).append(response);
@@ -472,71 +546,6 @@
         });
     });
 
-    //Get state and City
-    $(document).ready(function() {
-
-        $.ajax({
-            url: 'dataOperations.php',
-            type: 'GET',
-            data: {
-                getStates: true
-            },
-            success: function(response) {
-                $('#toState').append(response);
-            },
-            error: function(xhr, status, error) {
-                console.error("Error loading states:", error);
-            }
-        });
-
-        // When State Changes -> Load Districts
-        $('#toState').on('change', function() {
-            const stateId = $(this).val();
-            if (stateId) {
-                $.ajax({
-                    url: 'dataOperations.php',
-                    type: 'POST',
-                    data: {
-                        getCities: true,
-                        state_id: stateId
-                    },
-                    success: function(response) {
-                        $('#district').html('<option value="">-- SELECT DISTRICT --</option>').append(response);
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("Error loading cities:", error);
-                        $('#district').html('<option value="">-- SELECT DISTRICT --</option>');
-                    }
-                });
-            } else {
-                $('#district').html('<option value="">-- SELECT DISTRICT --</option>');
-            }
-        });
-
-        // When District Changes -> Load Route Names
-        $('#district').on('change', function() {
-            const stateId = $('#toState').val();
-            const districtId = $(this).val();
-            if (stateId && districtId) {
-                $.ajax({
-                    url: 'dataOperations.php',
-                    type: 'POST',
-                    data: {
-                        getRouteName: 1,
-                        stateId: stateId,
-                        districtId: districtId
-                    },
-                    success: function(response) {
-                        $('#routeName').html('<option value="">-- SELECT ROUTE --</option>').append(response);
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("Error loading route:", error);
-                        $('#routeName').html('<option value="">-- SELECT ROUTE --</option>');
-                    }
-                });
-            }
-        });
-    });
 
 
     $(document).ready(function() {
@@ -752,7 +761,73 @@
         $('select').addClass('w3-select');
         $('select').select2();
     });
+     //Get state and City
+     $(document).ready(function() {
+
+$.ajax({
+    url: 'dataOperations.php',
+    type: 'GET',
+    data: {
+        getStates: true
+    },
+    success: function(response) {
+        $('#toState').append(response);
+    },
+    error: function(xhr, status, error) {
+        console.error("Error loading states:", error);
+    }
+});
+
+// When State Changes -> Load Districts
+$('#toState').on('change', function() {
+    const stateId = $(this).val();
+    if (stateId) {
+        $.ajax({
+            url: 'dataOperations.php',
+            type: 'POST',
+            data: {
+                getCities: true,
+                state_id: stateId
+            },
+            success: function(response) {
+                $('#district').html('<option value="">-- SELECT DISTRICT --</option>').append(response);
+            },
+            error: function(xhr, status, error) {
+                console.error("Error loading cities:", error);
+                $('#district').html('<option value="">-- SELECT DISTRICT --</option>');
+            }
+        });
+    } else {
+        $('#district').html('<option value="">-- SELECT DISTRICT --</option>');
+    }
+});
+
+// When District Changes -> Load Route Names
+$('#district').on('change', function() {
+    const stateId = $('#toState').val();
+    const districtId = $(this).val();
+    if (stateId && districtId) {
+        $.ajax({
+            url: 'dataOperations.php',
+            type: 'POST',
+            data: {
+                getRouteName: 1,
+                stateId: stateId,
+                districtId: districtId
+            },
+            success: function(response) {
+                $('#routeName').html('<option value="">-- SELECT ROUTE --</option>').append(response);
+            },
+            error: function(xhr, status, error) {
+                console.error("Error loading route:", error);
+                $('#routeName').html('<option value="">-- SELECT ROUTE --</option>');
+            }
+        });
+    }
+});
+});
 </script>
+
 
 
 </html>

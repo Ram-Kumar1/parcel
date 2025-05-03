@@ -118,7 +118,7 @@
                                         <div class="col-12 col-sm-4">
                                             <div class="form-group">
                                                 <label for="shipment-via">
-                                                    Shipment Via <span class="mandatory-field">*</span>
+                                                    Shipment Via <span class="text-danger">*</span>
                                                 </label>
                                                 <select class="form-control select2" id="shipment-via" name="shipment_via" required>
                                                     <option value="">-- SELECT SHIPMENT ROUTE --</option>

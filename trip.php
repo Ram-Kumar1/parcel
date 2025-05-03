@@ -56,7 +56,7 @@
                                             <input type="number" name="openingKm" id="openingKm" class="form-control">
                                         </div>
                                         <div class="col-12 col-sm-6">
-                                            <label for="closingKm">Closing KM <span class="text-danger">*</span></label>
+                                            <label for="closingKm">Closing KM</label>
                                             <input type="number" name="closingKm" id="closingKm" class="form-control">
                                         </div>
                                     </div>
@@ -66,7 +66,7 @@
                                             <input type="number" name="dieselAmount" id="dieselAmount" class="form-control">
                                         </div>
                                         <div class="col-12 col-sm-6 d-none">
-                                            <label for="dieselLitter">Diesel Of Litter</label>
+                                            <label for="dieselLitter">Diesel Of Litter <span class="text-danger">*</span> </label>
                                             <input type="number" name="dieselLitter" id="dieselLitter" class="form-control" placeholder="None">
                                         </div>
                                     </div>
@@ -76,8 +76,8 @@
                                             <input type="number" name="advanceAmount" id="advanceAmount" class="form-control">
                                         </div>
                                         <div class="col-12 col-sm-6">
-                                            <label for="totalAmount">Total Amount</label>
-                                            <input type="number" name="totalAmount" id="totalAmount" class="form-control" readonly>
+                                            <label for="totalAmount">Total Amount <span class="text-danger">*</span></label>
+                                            <input type="number" name="totalAmount" id="totalAmount" class="form-control">
                                         </div>
                                     </div>
                                     <div id="table-data" class="table-responsive filterable max-30">
@@ -86,9 +86,7 @@
                                                 Check All <i class="fa fa-check-square-o" aria-hidden="true"></i>
                                             </button>
                                             &nbsp;
-                                            <button id="submit-selected" class="btn btn-success btn-sm" onclick="createTrip()">
-                                                Submit Selected <i class="fa fa-paper-plane" aria-hidden="true"></i>
-                                            </button>
+
 
                                         </div>
 
@@ -147,6 +145,11 @@
                                                 ?>
                                             </tbody>
                                         </table>
+                                        <div class="d-flex justify-content-center">
+                                            <button id="submit-selected" class="btn btn-success btn-sm" onclick="createTrip()">
+                                                Submit Selected <i class="fa fa-paper-plane" aria-hidden="true"></i>
+                                            </button>
+                                        </div>
 
                                     </div>
 
@@ -183,15 +186,6 @@
                 }
             });
 
-            // Update totalAmount
-            function updateTotalAmount() {
-                let diesel = parseFloat($('#dieselAmount').val()) || 0;
-                let advance = parseFloat($('#advanceAmount').val()) || 0;
-                let total = diesel + advance;
-                $('#totalAmount').val(total.toFixed(2));
-            }
-
-            $('#dieselAmount, #advanceAmount').on('input', updateTotalAmount);
 
             // Check/Uncheck all checkboxes
             const checkAllBtn = document.querySelector("#check-all");
@@ -210,20 +204,22 @@
 
         function createTrip() {
             let openingKm = $('#openingKm').val();
-            if (!openingKm) return alert("❌ Starting KM is mandatory!");
-
-            let closingKm = $('#closingKm').val();
-            if (!closingKm) return alert("❌ Closing KM is mandatory!");
+            if (!openingKm) return alert("❌ Opening KM is mandatory!");
+            
+            let closingKm = $('#closingKm').val() || null;
 
             let dieselAmount = $('#dieselAmount').val();
             if (!dieselAmount) return alert("❌ Diesel Amount is mandatory!");
 
-            let dieselLitter = $('#dieselLitter').val() || 0;
+            let dieselLitter = $('#dieselLitter').val();
+            if (!dieselLitter) return alert("❌ Diesel Of Litter is mandatory!");
 
             let advanceAmount = $('#advanceAmount').val();
             if (!advanceAmount) return alert("❌ Advance Amount is mandatory!");
 
-            let totalAmount = $('#totalAmount').val() || 0;
+            let totalAmount = $('#totalAmount').val();
+            if (!totalAmount) return alert("❌ Total Amount is mandatory!");
+
 
             let selectedIds = [];
             $("input[type='checkbox']:checked").each(function() {

@@ -411,28 +411,28 @@ if (isset($_POST['createTrip'])) {
     $openingKm = $_POST['openingKm'] ?? '';
     $closingKm = $_POST['closingKm'] ?? '';
     $dieselAmount = $_POST['dieselAmount'] ?? '';
-    $dieselLitter = $_POST['dieselLitter'] ?? 'None';
+    $dieselLitter = $_POST['dieselLitter'] ?? '';
     $advanceAmount = $_POST['advanceAmount'] ?? '';
     $totalAmount = $_POST['totalAmount'] ?? '';
 
     if (!empty($gdmIds) && is_array($gdmIds)) {
-        $gdmIdString = implode(',', $gdmIds); 
+        $gdmIdString = implode(',', $gdmIds);
         $gdmData = array(
             "GDM_ID" => $gdmIdString
         );
-       $tripIdResponse = $dbOperator->insertData('trip_gdm_mapping', $gdmData);
+        $tripIdResponse = $dbOperator->insertData('trip_gdm_mapping', $gdmData);
         if (!$tripIdResponse) {
             throw new Exception("Failed to insert into gdm_number table.");
         }
     }
 
-        // Extract the numeric ID
-        preg_match('/\d+$/', $tripIdResponse, $matches);
-        $tripId = $matches[0] ?? null;
+    // Extract the numeric ID
+    preg_match('/\d+$/', $tripIdResponse, $matches);
+    $tripId = $matches[0] ?? null;
 
-        if (!$tripId) {
-            throw new Exception("Invalid GDM ID returned.");
-        }
+    if (!$tripId) {
+        throw new Exception("Invalid GDM ID returned.");
+    }
 
     $tripNumber = tripNo($conn);
     $data = array(
@@ -447,6 +447,13 @@ if (isset($_POST['createTrip'])) {
     );
 
     echo $dbOperator->insertData('trip_details', $data);
+
+    $tripUpdate = array(
+        "STATUS" => 1
+    );    
+     $dbOperator->updateData('gdm_mapping', $tripUpdate ,['GDM_ID' => $gdmIdString]);
+
+    
 }
 
 

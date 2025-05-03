@@ -54,11 +54,11 @@
                                                     <th>Trip Number</th>
                                                     <th>Opening KM</th>
                                                     <th>Closing KM</th>
-                                                    <th>Diesel Amount</th>
                                                     <th>Diesel Of Litter</th>
+                                                    <th>Diesel Amount</th>
                                                     <th>Advance Amount</th>
                                                     <th>Total Amount</th>
-                                                    <th>View GDM</th>
+                                                    <th>View</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -66,6 +66,7 @@
                                                 $userName = $_SESSION['userName'] ?? null;
                                                 $branchName = $_SESSION['admin'] ?? null;
                                                 $sno = 1;
+
                                                 function getGDMDetails($conn)
                                                 {
                                                     $sql = "SELECT * FROM v_viewtrip";
@@ -82,28 +83,52 @@
                                                 }
 
                                                 $gdmDetails = getGDMDetails($conn);
+                                                $totalTotalAmount = 0;
+                                                $totalDieselAmount = 0;
+                                                $totalAdvanceAmount = 0;
 
                                                 foreach ($gdmDetails as $row) {
-                                                    echo "<tr class='text-center'>
-                                                    <td>" . $sno . "</td>
-                                                    <td>" . ($row['TRIP_NUMBER'] ?? 'N/A') . "</td>
-                                                    <td>" . ($row['OPENING_KM'] ?? 'N/A') . "</td>
-                                                    <td>" . ($row['CLOSING_KM'] ?? 'N/A') . "</td>
-                                                    <td>" . ($row['DIESEL_AMOUNT'] ?? 'N/A') . "</td>
-                                                    <td>" . ($row['DIESEL_LITTER'] ?? 'N/A') . "</td>
-                                                    <td>" . ($row['ADVANCE_AMOUNT'] ?? 'N/A') . "</td>
-                                                    <td>" . ($row['TOTAL_AMOUNT'] ?? 'N/A') . "</td>
-                                                     <td>
-                                                          <a class='a-view-icon' href='viewTripGDM.php?gdm=".$row['tgm_trip_mapping_id'] . "'>
-                                                            <i class='material-icons' style='cursor:pointer;'>remove_red_eye</i>
-                                                          </a>
-                                                    </td>
-                                                </tr>";
+                                                    $totalAmount = floatval($row['TOTAL_AMOUNT'] ?? 0);
+                                                    $dieselAmount = floatval($row['DIESEL_AMOUNT'] ?? 0);
+                                                    $dieselLitter = $row['DIESEL_LITTER'] ?? 'N/A';
+                                                    $advanceAmount = floatval($row['ADVANCE_AMOUNT'] ?? 0);
 
+                                                    $totalTotalAmount += $totalAmount;
+                                                    $totalDieselAmount += $dieselAmount;
+                                                    $totalAdvanceAmount += $advanceAmount;
+
+                                                    echo "<tr class='text-center'>
+              <td>" . $sno . "</td>
+              <td>" . ($row['TRIP_NUMBER'] ?? 'N/A') . "</td>
+              <td>" . ($row['OPENING_KM'] ?? 'N/A') . "</td>
+              <td>" . ($row['CLOSING_KM'] ?? 'N/A') . "</td>
+              <td>" . $dieselLitter . "</td>
+              <td>" . number_format($dieselAmount, 2) . "</td>
+              <td>" . number_format($advanceAmount, 2) . "</td>
+              <td>" . number_format($totalAmount, 2) . "</td>
+              <td>
+                    <a class='a-view-icon' href='viewTripGDM.php?gdm=" . $row['tgm_trip_mapping_id'] . "'>
+                    <i class='material-icons' style='cursor:pointer;'>remove_red_eye</i>
+                    </a>
+              </td>
+              </tr>";
                                                     $sno++;
                                                 }
                                                 ?>
                                             </tbody>
+
+                                            <tfoot>
+                                                <tr class='text-center font-weight-bold'>
+                                                    <td colspan="5">Grand Total</td>
+                                                    <td><?= number_format($totalDieselAmount, 2) ?></td>
+                                                    <td><?= number_format($totalAdvanceAmount, 2) ?></td>
+                                                    <td><?= number_format($totalTotalAmount, 2) ?></td>
+                                                    <td></td>
+                                                </tr>
+                                            </tfoot>
+
+
+
                                         </table>
 
                                     </div>
